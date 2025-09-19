@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.tracing.perfetto.handshake)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -56,4 +57,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+// Converter Gson para Retrofit
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+// Coroutines (si no las tienes aún)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+// Opcional: logging interceptor para ver peticiones HTTP
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 }

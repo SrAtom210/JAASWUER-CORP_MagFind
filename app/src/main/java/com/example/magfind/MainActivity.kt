@@ -1,6 +1,9 @@
 package com.example.magfind
 
+import Categoria
+import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -29,9 +32,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.tracing.perfetto.handshake.protocol.Response
 import com.example.magfind.ui.theme.MagFindTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+private val Response.isSuccessful: Boolean
+    get() {
+        TODO()
+    }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,13 +124,14 @@ fun Principal() {
             )
         }
 
-        // Botón negro
+        val context = LocalContext.current
+
         Button(
             onClick = {
                 if (categoria.isBlank()) {
                     error = true
                 } else {
-                    // TODO: llamada a la API
+                    guardarCategoria(context, categoria)
                     println("Categoría agregada: $categoria")
                 }
             },
@@ -129,3 +144,17 @@ fun Principal() {
         }
     }
 }
+// MainActivity.kt
+fun guardarCategoria(context: Context, nombre: String) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = RetrofitClient.instance.addCategoria(Categoria(nombre = nombre))
+        withContext(Dispatchers.Main) {
+            if (response.isSuccessful) {
+                Toast.makeText(context, "Categoría guardada", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Error al guardar", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
