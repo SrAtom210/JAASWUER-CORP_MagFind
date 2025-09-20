@@ -20,10 +20,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -107,12 +110,18 @@ fun Principal() {
                 categoria = it
                 error = false
             },
-            placeholder = { Text("Ej. Trabajo", color = Color.DarkGray)
+            placeholder = { Text("Ej. Trabajo")
                           },
             isError = error,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 16.dp),
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Color.DarkGray,
+                unfocusedTextColor = Color.DarkGray,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+            ),
         )
 
         if (error) {
@@ -144,17 +153,31 @@ fun Principal() {
         }
     }
 }
-// MainActivity.kt
+
+
 fun guardarCategoria(context: Context, nombre: String) {
     CoroutineScope(Dispatchers.IO).launch {
-        val response = RetrofitClient.instance.addCategoria(Categoria(nombre = nombre))
-        withContext(Dispatchers.Main) {
-            if (response.isSuccessful) {
-                Toast.makeText(context, "Categoría guardada", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Error al guardar", Toast.LENGTH_SHORT).show()
+        try {
+            val response = RetrofitClient.instance.addCategoria(Categoria(nombre = nombre))
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    val categoriaCreada = response.body()
+                    Toast.makeText(
+                        context,
+                        "Categoría guardada: ${categoriaCreada?.nombre ?: nombre}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    val errorMsg = response.errorBody()?.string() ?: "Error desconocido"
+                    Toast.makeText(context, "Error al guardar: $errorMsg", Toast.LENGTH_LONG).show()
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Excepción: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
 }
+
 

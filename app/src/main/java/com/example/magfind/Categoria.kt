@@ -5,21 +5,29 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.Response
 
+// Modelo
 data class Categoria(
     val id: Int? = null,
     val nombre: String
 )
 
-interface ApiService {
-    @POST("categorias")
-    suspend fun addCategoria(@Body categoria: Categoria): Response<String>
+// Wrapper para el GET
+data class CategoriaResponse(
+    val items: List<Categoria>
+)
 
-    @GET("categorias")
-    suspend fun getCategorias(): List<Categoria>
+// API Service
+interface ApiService {
+    @POST("categorias/")
+    suspend fun addCategoria(@Body categoria: Categoria): Response<Categoria>
+
+    @GET("categorias/")
+    suspend fun getCategorias(): Response<CategoriaResponse>
 }
 
+// Retrofit Client
 object RetrofitClient {
-    private const val BASE_URL = "http://TU_IP:PUERTO/"
+    private const val BASE_URL = "https://gf8cee49287ea17-magfindgps.adb.us-ashburn-1.oraclecloudapps.com/ords/admin/"
 
     val instance: ApiService by lazy {
         Retrofit.Builder()
