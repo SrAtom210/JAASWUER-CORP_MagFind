@@ -46,6 +46,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Response
 
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,7 +150,6 @@ fun Principal() {
         }
     }
 }
-
 
 fun guardarCategoria(context: Context, nombre: String) {
     CoroutineScope(Dispatchers.IO).launch {

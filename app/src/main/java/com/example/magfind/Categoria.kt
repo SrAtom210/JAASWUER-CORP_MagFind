@@ -18,6 +18,7 @@ data class CategoriaResponse(
 
 // API Service
 interface ApiService {
+
     @POST("categorias/")
     suspend fun addCategoria(@Body categoria: Categoria): Response<Categoria>
 
