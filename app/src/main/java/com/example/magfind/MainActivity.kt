@@ -12,6 +12,7 @@ import com.example.magfind.ui.theme.MagFindTheme
 import com.example.magfind.views.HomeView
 import com.example.magfind.views.LoginView
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

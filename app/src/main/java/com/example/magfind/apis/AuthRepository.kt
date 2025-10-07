@@ -26,6 +26,7 @@ class AuthRepository {
         } catch (e: Exception) {
             Log.e("LOGIN_DEBUG", "Error: ${e.message}")
             null
+
         }
     }
 }

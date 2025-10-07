@@ -28,6 +28,7 @@ data class LoginResponse(
 // --- Interfaz de API unificada ---
 interface ApiService {
 
+
     // Categorías
     @POST("categorias/")
     suspend fun addCategoria(@Body categoria: Categoria): Response<Categoria>
