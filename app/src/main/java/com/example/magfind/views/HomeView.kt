@@ -114,3 +114,4 @@ fun guardarCategoria(context: Context, nombre: String) {
         }
     }
 }
+
