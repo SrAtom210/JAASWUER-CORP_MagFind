@@ -41,6 +41,14 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.material3)
+    val nav_version = "2.9.4"
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+
+    implementation("androidx.compose.material3:material3:1.3.0")
+
+    implementation("androidx.compose.material:material-icons-extended")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
