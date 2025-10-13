@@ -104,7 +104,7 @@ fun LoginView(navController: NavHostController) {
                         color = Color.White
                     )
                 }
-                Text("------o------")
+                Text("------o-----")
                 Button(onClick = {navController.navigate("Categorias")},
                     modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Color.Black))
                     ,colors = ButtonDefaults.buttonColors(containerColor = Color.White))
