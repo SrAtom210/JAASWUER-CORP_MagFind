@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.magfind.components.fPlantilla
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,57 +38,17 @@ fun flHomeView(navController: NavController){
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(250.dp),
-                drawerContainerColor = Color(0xFFF5F5F5)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = "Menú",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1976D2),
-                        modifier = Modifier.padding(bottom = 20.dp)
-                    )
-
-                    DrawerItem("Categorias") {}
-                    DrawerItem("Perfil") {}
-                    DrawerItem("Configuración") {}
-                    DrawerItem("Cerrar sesión") {}
-                }
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("MagFind", color = Color.White) },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch { drawerState.open() }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Abrir menú",
-                                tint = Color.White
-
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFF1976D2)
-                    )
-                )
-            }
-        ) { innerPadding ->
+    fPlantilla(
+        title = "Home",
+        drawerItems = listOf(
+            "Home" to { navController.navigate("Home")},
+            "Ajustes" to { navController.navigate("Ajustes")},
+            "Categorías" to { navController.navigate("Categorias") },
+            "Correos" to { navController.navigate("CorreosCat") },
+            "Mi Cuenta" to { navController.navigate("MiCuenta")},
+            "Suscripcion" to { navController.navigate("Suscripcion")}
+        )
+    ) { innerPadding ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -98,18 +59,3 @@ fun flHomeView(navController: NavController){
             }
         }
     }
-}
-
-
-@Composable
-fun DrawerItem(title: String, onClick: () -> Unit) {
-    Text(
-        text = title,
-        fontSize = 18.sp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 10.dp)
-            .clickable { onClick() },
-        color = Color.Black
-    )
-}

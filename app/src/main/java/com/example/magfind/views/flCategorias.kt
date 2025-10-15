@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.magfind.components.fPlantilla
 import kotlinx.coroutines.launch
 
 
@@ -54,34 +55,16 @@ fun CategoriasView(navController: NavController){
         "Ejemplo5"
     )
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(250.dp),
-                drawerContainerColor = Color(0xFFF5F5F5)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = "Menú",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1976D2),
-                        modifier = Modifier.padding(bottom = 20.dp)
-                    )
-
-                    DrawerItem("Inicio") {}
-                    DrawerItem("Perfil") {}
-                    DrawerItem("Configuración") {}
-                    DrawerItem("Cerrar sesión") {}
-                }
-            }
-        }
+    fPlantilla(
+        title = "Categorias",
+        drawerItems = listOf(
+            "Home" to { navController.navigate("Home")},
+            "Ajustes" to { navController.navigate("Ajustes")},
+            "Categorías" to { navController.navigate("Categorias") },
+            "Correos" to { navController.navigate("CorreosCat") },
+            "Mi Cuenta" to { navController.navigate("MiCuenta")},
+            "Suscripcion" to { navController.navigate("Suscripcion")}
+        )
     ) {
         Scaffold(
             topBar = {
@@ -104,7 +87,6 @@ fun CategoriasView(navController: NavController){
                 )
             },
             floatingActionButton = {
-                // Colocamos dos botones flotantes personalizados
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
