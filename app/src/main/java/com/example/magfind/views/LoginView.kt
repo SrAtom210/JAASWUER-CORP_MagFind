@@ -1,9 +1,12 @@
 package com.example.magfind.views
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,34 +15,50 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat.enableEdgeToEdge
 import androidx.navigation.NavHostController
 import com.example.magfind.R
+import com.example.magfind.ui.theme.ThemeViewModel
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+
 @Composable
-fun LoginView(navController: NavHostController) {
+fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    val isDark = themeViewModel.isDarkMode.collectAsState().value
+    val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
+    val textColor = if (isDark) Color.White else Color.DarkGray
+    val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
 
-
-    // Fondo blanco
+    //Fondo dinamico
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.White
+        color = backgroundColor
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center)
-            {
+            modifier = Modifier.fillMaxSize()
+            .padding(top = 50.dp),
+            contentAlignment = Alignment.TopCenter
+        )
+        {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                Image(painter = painterResource(R.drawable.magfind), contentDescription = "logo")
+                Image(painter = painterResource(R.drawable.magfind),
+                    contentDescription = "logo",
+                    modifier = Modifier.size(200.dp)
+                )
+
                 val gradient = Brush.linearGradient(
                     colors = listOf(Color(0xFF2196F3), Color(0xFF00BCD4))
                 )
@@ -54,60 +73,94 @@ fun LoginView(navController: NavHostController) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 32.dp)
                 )
                 // Campo de usuario
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Usuario", color = Color.DarkGray) },
-                    textStyle = LocalTextStyle.current.copy(color = Color.DarkGray),
-                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Usuario", color = textColor) },
+                    textStyle = LocalTextStyle.current.copy(color = textColor),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.DarkGray,
-                        unfocusedTextColor = Color.DarkGray,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        cursorColor = Color.DarkGray,
-                        focusedIndicatorColor = Color.DarkGray,
-                        unfocusedIndicatorColor = Color.Gray
-                    )
+                        focusedTextColor = textColor,
+                        unfocusedTextColor = textColor,
+                        cursorColor = accentColor,
+                        focusedIndicatorColor = accentColor,
+                        unfocusedIndicatorColor = accentColor
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 // Campo de contraseña
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Contraseña", color = Color.DarkGray) },
-                    textStyle = LocalTextStyle.current.copy(color = Color.DarkGray),
+                    label = { Text("Contraseña", color = textColor) },
+                    textStyle = LocalTextStyle.current.copy(color = textColor),
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = Color.DarkGray,
-                        unfocusedTextColor = Color.DarkGray,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        cursorColor = Color.DarkGray,
-                        focusedIndicatorColor = Color.DarkGray,
-                        unfocusedIndicatorColor = Color.Gray
-                    )
+                        focusedTextColor = textColor,
+                        unfocusedTextColor = textColor,
+                        cursorColor = accentColor,
+                        focusedIndicatorColor = accentColor,
+                        unfocusedIndicatorColor = accentColor
+                    ),
                 )
 
+
                 // Botón de login
+                val scope = rememberCoroutineScope()
+                val context = LocalContext.current
+                val repo = com.example.magfind.apis.AuthRepository()
+
                 Button(
-                    onClick = {},
+                    onClick = {
+                        scope.launch {
+                            try {
+                                val token = repo.login(username, password)
+
+                                if (token != null) {
+                                    com.example.magfind.SessionManager.token = token
+                                    com.example.magfind.SessionManager.username = username
+
+                                    Toast.makeText(
+                                        context,
+                                        "Inicio de sesión exitoso. Bienvenido, $username",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    navController.navigate("Home")
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Credenciales incorrectas. Verifica usuario y contraseña.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    context,
+                                    "Error al conectar con el servidor: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                e.printStackTrace()
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor)
                 ) {
-                    Text(
-                        "Iniciar Sesión",
-                        color = Color.White
-                    )
+                    Text("Iniciar sesión", color = if (isDark) Color.Black else Color.White)
                 }
-                Text("------o-----")
-                Button(onClick = {navController.navigate("Categorias")},
-                    modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Color.Black))
-                    ,colors = ButtonDefaults.buttonColors(containerColor = Color.White))
+
+                Text("------o------")
+
+                Button(
+                    onClick = { navController.navigate("Categorias") },
+                    modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Color.Black)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                )
                 {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -124,9 +177,11 @@ fun LoginView(navController: NavHostController) {
                         /*navController.navigate("home")*/
                     }
                 }
-                Button(onClick = {navController.navigate("home")},
-                    modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Color.Black))
-                    , colors = ButtonDefaults.buttonColors(containerColor = Color.White))
+                Button(
+                    onClick = { navController.navigate("home") },
+                    modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Color.Black)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                )
                 {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -145,10 +200,42 @@ fun LoginView(navController: NavHostController) {
                 }
 
                 // Enlace de registro
-                TextButton(onClick = {/*onRegisterClick*/}, modifier = Modifier.fillMaxWidth()) {
-                    Text("Registrarse", color = Color.DarkGray)
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                val usernameTrimmed = username.substringBefore('@')
+                                val success = repo.register(usernameTrimmed, username, password)
+
+                                if (success) {
+                                    Toast.makeText(
+                                        context,
+                                        "Registro exitoso. Ahora puedes iniciar sesión.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Error al registrar usuario. Inténtalo nuevamente.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    context,
+                                    "Error al conectar con el servidor: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                e.printStackTrace()
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Registrarse", color = textColor)
                 }
             }
         }
+
     }
 }

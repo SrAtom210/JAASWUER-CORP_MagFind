@@ -3,32 +3,37 @@ package com.example.magfind
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.navigation.compose.rememberNavController
+import androidx.activity.viewModels
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.magfind.pnavigation.NavManager
 import com.example.magfind.ui.theme.MagFindTheme
+import com.example.magfind.ui.theme.ThemeRepository
+import com.example.magfind.ui.theme.ThemeViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 class MainActivity : ComponentActivity() {
+
+    private val themeViewModel by viewModels<ThemeViewModel> {
+        viewModelFactory {
+            initializer {
+                ThemeViewModel(ThemeRepository(applicationContext))
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MagFindTheme {
-                // Estado para almacenar el token
-                var token by remember { mutableStateOf<String?>(null) }
-                val navController = rememberNavController()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.White
-                ) {
-                    NavManager()
-                }
+        setContent {
+            val isDarkMode by themeViewModel.isDarkMode.collectAsState()
+
+            MagFindTheme(darkTheme = isDarkMode) {
+                NavManager(themeViewModel)
             }
         }
     }
 }
-

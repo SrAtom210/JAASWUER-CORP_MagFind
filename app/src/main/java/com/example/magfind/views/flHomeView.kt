@@ -30,16 +30,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.magfind.components.fPlantilla
+import com.example.magfind.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun flHomeView(navController: NavController){
+fun flHomeView(navController: NavController,themeViewModel: ThemeViewModel){
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     fPlantilla(
         title = "Home",
+        navController,themeViewModel = themeViewModel,
         drawerItems = listOf(
             "Home" to { navController.navigate("Home")},
             "Ajustes" to { navController.navigate("Ajustes")},

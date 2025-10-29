@@ -4,40 +4,36 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.magfind.views.CategoriasView
-import com.example.magfind.views.LoginView
-import com.example.magfind.views.fAjustesView
-import com.example.magfind.views.fCorreosCategorizadosView
-import com.example.magfind.views.fCuentaView
-import com.example.magfind.views.fSuscripcionView
-import com.example.magfind.views.flHomeView
+import com.example.magfind.ui.theme.ThemeViewModel
+import com.example.magfind.views.*
 
 @Composable
-fun NavManager(){
+fun NavManager(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "Login")
-    {
-        composable ("Home"){
-            flHomeView(navController)
+    NavHost(navController = navController, startDestination = "Login") {
+
+        composable("Login") {
+            LoginView(navController,themeViewModel)
         }
-        composable ("Login"){
-            LoginView(navController)
+        composable("Home") {
+            flHomeView(navController,themeViewModel)
         }
-        composable ("Categorias"){
-            CategoriasView(navController)
+        //  Aquí pasamos el viewModel del tema para controlar el modo oscuro global
+        composable("Ajustes") {
+            fAjustesView(navController, themeViewModel)
         }
-        composable ("Suscripcion"){
-            fSuscripcionView(navController)
+        composable("Categorias") {
+            CategoriasView(navController,themeViewModel)
         }
-        composable ("CorreosCat"){
-            fCorreosCategorizadosView(navController)
+        composable("CorreosCat") {
+            fCorreosCategorizadosView(navController,themeViewModel)
         }
-        composable ("Ajustes"){
-            fAjustesView(navController)
+        composable("MiCuenta") {
+            fCuentaView(navController,themeViewModel)
         }
-        composable ("MiCuenta"){
-            fCuentaView(navController)
+        composable("Suscripcion") {
+            fSuscripcionView(navController,themeViewModel)
         }
     }
 }

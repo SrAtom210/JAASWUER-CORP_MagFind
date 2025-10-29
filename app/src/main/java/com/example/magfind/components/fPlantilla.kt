@@ -9,35 +9,68 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.magfind.SessionManager
+import com.example.magfind.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun fPlantilla(
     title: String,
+    navController: NavController,
+    themeViewModel: ThemeViewModel,
     drawerItems: List<Pair<String, () -> Unit>> = emptyList(),
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    // 🎨 Colores dinámicos según el tema global
+    val isDark = themeViewModel.isDarkMode.value
+    val drawerBackground = if (isDark) Color(0xFF121212) else Color(0xFFF5F5F5)
+    val textColor = if (isDark) Color.White else Color.Black
+    val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.width(250.dp),
-                drawerContainerColor = Color(0xFFF5F5F5)
+                drawerContainerColor = drawerBackground
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                     Text(
                         text = "Menú",
-                        style = MaterialTheme.typography.titleLarge.copy(color = Color(0xFF1976D2))
+                        style = MaterialTheme.typography.titleLarge.copy(color = accentColor)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     drawerItems.forEach { (itemTitle, onClick) ->
-                        fDrawerItem(title = itemTitle) {
+                        fDrawerItem(title = itemTitle, textColor = textColor) {
                             onClick()
                             scope.launch { drawerState.close() }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        TextButton(
+                            onClick = {
+                                SessionManager.token = null
+                                SessionManager.username = null
+                                navController.navigate("Login") {
+                                    popUpTo(0)
+                                }
+                                scope.launch { drawerState.close() }
+                            }
+                        ) {
+                            Text(
+                                text = "Cerrar Sesión",
+                                style = MaterialTheme.typography.titleLarge.copy(color = accentColor)
+                            )
                         }
                     }
                 }
@@ -58,7 +91,7 @@ fun fPlantilla(
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color(0xFF1976D2)
+                        containerColor = accentColor
                     )
                 )
             }
@@ -71,7 +104,7 @@ fun fPlantilla(
 }
 
 @Composable
-fun fDrawerItem(title: String, onClick: () -> Unit) {
+fun fDrawerItem(title: String, textColor: Color, onClick: () -> Unit) {
     Text(
         text = title,
         fontSize = MaterialTheme.typography.bodyLarge.fontSize,
@@ -79,6 +112,6 @@ fun fDrawerItem(title: String, onClick: () -> Unit) {
             .fillMaxWidth()
             .padding(vertical = 10.dp)
             .clickable { onClick() },
-        color = Color.Black
+        color = textColor
     )
 }
