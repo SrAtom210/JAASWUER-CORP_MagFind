@@ -9,6 +9,7 @@ import com.example.magfind.views.LoginView
 import com.example.magfind.views.fAjustesView
 import com.example.magfind.views.fCorreosCategorizadosView
 import com.example.magfind.views.fCuentaView
+import com.example.magfind.views.fRegistroView
 import com.example.magfind.views.fSuscripcionView
 import com.example.magfind.views.flHomeView
 
@@ -38,6 +39,9 @@ fun NavManager(){
         }
         composable ("MiCuenta"){
             fCuentaView(navController)
+        }
+        composable ("Registro"){
+            fRegistroView(navController)
         }
     }
 }

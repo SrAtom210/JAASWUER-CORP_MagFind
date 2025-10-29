@@ -83,31 +83,58 @@ fun fSuscripcionView(navController: NavController) {
                 PlanCard(
                     title = "Essential",
                     price = "Gratis",
-                    description = "Ideal para comenzar.\nIncluye funciones básicas y limitadas.",
+                    description = "Cuenta con:\n" +
+                            ".-Sincronización con 1 cuenta de correo\n"+
+                    ".-Clasificacipon automática con IA.\n" +
+                            ".-Hasta 5 Categorías Personalizadas. \n" +
+                            ".-Aprendizaje Básico.\n"+
+                    ".-Búsqueda Estándar.\n"+
+                    ".-Soporte Comunitario.",
                     isSelected = selectedPlan == "Essential",
                     onSelect = { selectedPlan = "Essential" }
                 )
 
                 PlanCard(
                     title = "Plus",
-                    price = "$4.99 / mes",
-                    description = "Funciones avanzadas y mayor almacenamiento.",
+                    price = "$50 / mes",
+                    description = "Cuenta con:\n" +
+                            ".-Todo el nivel Essential\n"+
+                            ".-Hasta 50 Categorías.\n" +
+                            ".-Sincronización con hasta 3 cuentas. \n" +
+                            ".-Reglas manuales avanzadas.\n"+
+                            ".-Reentrenamiento semanal de la IA.\n"+
+                            ".-Experiencia sin anuncios.\n"+
+                    ".-Soporte por Email",
                     isSelected = selectedPlan == "Plus",
                     onSelect = { selectedPlan = "Plus" }
                 )
 
                 PlanCard(
                     title = "Platinum",
-                    price = "$9.99 / mes",
-                    description = "Acceso completo con soporte prioritario.",
+                    price = "$150 / mes",
+                    description = "Cuenta con:\n" +
+                            ".-Todo el nivel Plus\n"+
+                            ".-Sincronización con hasta 10 cuentas\n" +
+                            ".-Reentrenamiento diario de la IA \n" +
+                            ".-Notificaciones Inteligentes.\n"+
+                            ".-Búsqueda Avanzada.\n"+
+                            ".-Sincronización Multi-dispositivo prioritaria.\n" +
+                    ".-Soporte Premium (chat en vivo)",
                     isSelected = selectedPlan == "Platinum",
                     onSelect = { selectedPlan = "Platinum" }
                 )
 
                 PlanCard(
                     title = "Business",
-                    price = "$19.99 / mes",
-                    description = "Diseñado para equipos y empresas.\nGestión multiusuario y estadísticas.",
+                    price = "$199 / mes",
+                    description = "Cuenta con:\n" +
+                            ".-Incluye todo lo del nivel Platinum.\n"+
+                            ".-Cuentas Ilimitadas por Usuario.\n" +
+                            ".-Panel de Administración para empresa. \n" +
+                            ".-Categorías compartidas.\n"+
+                            ".-Asignación de correos.\n"+
+                            ".-Soporte Dedicado.\n"+
+                    ".-Integraciones Futuras.",
                     isSelected = selectedPlan == "Business",
                     onSelect = { selectedPlan = "Business" }
                 )
@@ -115,7 +142,7 @@ fun fSuscripcionView(navController: NavController) {
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Button(
-                    onClick = { /* Acción para confirmar plan */ },
+                    onClick = {  },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
@@ -152,7 +179,7 @@ fun PlanCard(
             Text(
                 description,
                 fontSize = 16.sp,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Left,
                 color = Color.Gray,
                 modifier = Modifier.padding(vertical = 8.dp)
             )

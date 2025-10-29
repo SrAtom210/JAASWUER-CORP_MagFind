@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.magfind.views.fCorreoPopup
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,6 +21,7 @@ fun fPlantilla(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var cuentasPopUp by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -65,6 +67,12 @@ fun fPlantilla(
         ) { innerPadding ->
             Box(modifier = Modifier.fillMaxSize()) {
                 content(innerPadding)
+            }
+
+            if (cuentasPopUp) {
+                fCorreoPopup(
+                    onDismiss = { cuentasPopUp = false }
+                )
             }
         }
     }
