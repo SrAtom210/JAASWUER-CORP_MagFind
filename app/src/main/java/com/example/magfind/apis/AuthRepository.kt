@@ -3,31 +3,48 @@ package com.example.magfind.apis
 import android.util.Log
 import com.example.magfind.RetrofitClient
 import com.example.magfind.models.LoginRequest
+import com.example.magfind.models.LoginResponse
 
 class AuthRepository {
 
     private val api = RetrofitClient.instance
 
+    // --- LOGIN ---
     suspend fun login(username: String, password: String): String? {
         return try {
             val request = LoginRequest(username, password)
-            val response = api.login(request)
+            val response: LoginResponse = api.login(request)
+            response.token
+        } catch (e: Exception) {
+            Log.e("LOGIN_EXCEPTION", "Error: ${e.message}")
+            null
+        }
+    }
 
-            Log.d("LOGIN_DEBUG", "Request: $request")
-            Log.d("LOGIN_DEBUG", "Response code: ${response.code()}")
-            Log.d("LOGIN_DEBUG", "Response body: ${response.body()}")
-            Log.d("LOGIN_DEBUG", "Error body: ${response.errorBody()?.string()}")
+    // --- REGISTRO ---
+    suspend fun register(nombre: String, username: String, password: String): Boolean {
+        return try {
+            val nombreFinal = nombre.ifBlank { username.substringBefore('@') }
+
+            val requestBody = hashMapOf<String, Any>(
+                "nombre" to nombreFinal,
+                "username" to username,
+                "password" to password,
+                "email" to username
+            )
+
+            val response = RetrofitClient.rawClient().post("/register", requestBody)
 
             if (response.isSuccessful) {
-                response.body()?.token
+                Log.d("REGISTER", "Usuario registrado correctamente")
+                true
             } else {
-                null
+                Log.e("REGISTER", "Error: ${response.errorBody()?.string()}")
+                false
             }
         } catch (e: Exception) {
-            Log.e("LOGIN_DEBUG", "Error: ${e.message}")
-            null
-
+            Log.e("REGISTER_EXCEPTION", "Error: ${e.message}")
+            false
         }
     }
 }
-

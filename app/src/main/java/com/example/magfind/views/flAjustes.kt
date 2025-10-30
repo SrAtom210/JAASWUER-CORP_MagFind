@@ -15,29 +15,38 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.magfind.components.fDrawerItem
 import com.example.magfind.components.fPlantilla
+import com.example.magfind.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun fAjustesView(navController: NavController) {
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
+fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
     var notificationsEnabled by remember { mutableStateOf(true) }
-    var darkModeEnabled by remember { mutableStateOf(false) }
     var autoSyncEnabled by remember { mutableStateOf(true) }
 
-    fPlantilla(
-        title = "Ajustes",
-        drawerItems = listOf(
-            "Home" to { navController.navigate("Home")},
-            "Ajustes" to { navController.navigate("Ajustes")},
-            "Categorías" to { navController.navigate("Categorias") },
-            "Correos" to { navController.navigate("CorreosCat") },
-            "Mi Cuenta" to { navController.navigate("MiCuenta")},
-            "Suscripcion" to { navController.navigate("Suscripcion")}
-        )
-    ) { innerPadding ->
+    val darkModeEnabled by themeViewModel.isDarkMode.collectAsState()
+
+    val backgroundColor = if (darkModeEnabled) Color(0xFF121212) else Color.White
+    val textColor = if (darkModeEnabled) Color.White else Color.Black
+    val accentColor = if (darkModeEnabled) Color(0xFF90CAF9) else Color(0xFF1976D2)
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = backgroundColor
+    ) {
+        fPlantilla(
+            title = "Ajustes",
+            navController = navController,
+            themeViewModel = themeViewModel,
+            drawerItems = listOf(
+                "Home" to { navController.navigate("Home") },
+                "Ajustes" to { navController.navigate("Ajustes") },
+                "Categorías" to { navController.navigate("Categorias") },
+                "Correos" to { navController.navigate("CorreosCat") },
+                "Mi Cuenta" to { navController.navigate("MiCuenta") },
+                "Suscripción" to { navController.navigate("Suscripcion") }
+            )
+        ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -45,25 +54,51 @@ fun fAjustesView(navController: NavController) {
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                Text("Preferencias", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
+                Text(
+                    "Preferencias",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
 
-                fSettingToggle("Notificaciones", notificationsEnabled) { notificationsEnabled = it }
-                fSettingToggle("Modo oscuro", darkModeEnabled) { darkModeEnabled = it }
-                fSettingToggle("Sincronización automática", autoSyncEnabled) { autoSyncEnabled = it }
+                fSettingToggle("Notificaciones", notificationsEnabled, textColor, accentColor) {
+                    notificationsEnabled = it
+                }
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                //  este switch controla el modo oscuro global
+                fSettingToggle("Modo oscuro", darkModeEnabled, textColor, accentColor) {
+                    themeViewModel.toggleDarkMode(it)
+                }
 
-                Text("Privacidad", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
+                fSettingToggle("Sincronización automática", autoSyncEnabled, textColor, accentColor) {
+                    autoSyncEnabled = it
+                }
 
-                fSettingAction("Cambiar contraseña") { /* acción futura */ }
-                fSettingAction("Política de privacidad") { /* acción futura */ }
-                fSettingAction("Eliminar cuenta") { /* acción futura */ }
+                Divider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = accentColor.copy(alpha = 0.5f)
+                )
+
+                Text("Privacidad", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = accentColor)
+
+                fSettingAction("Cambiar contraseña", accentColor, textColor) { }
+                fSettingAction("Política de privacidad", accentColor, textColor) { }
+                fSettingAction("Eliminar cuenta", accentColor, textColor) { }
+
             }
         }
     }
+}
+
 
 @Composable
-fun fSettingToggle(title: String, checked: Boolean, onToggle: (Boolean) -> Unit) {
+fun fSettingToggle(
+    title: String,
+    checked: Boolean,
+    textColor: Color,
+    accentColor: Color,
+    onToggle: (Boolean) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,17 +106,26 @@ fun fSettingToggle(title: String, checked: Boolean, onToggle: (Boolean) -> Unit)
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(title, fontSize = 18.sp)
-        Switch(checked = checked, onCheckedChange = onToggle, colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF1976D2)))
+        Text(title, fontSize = 18.sp, color = textColor)
+        Switch(
+            checked = checked,
+            onCheckedChange = onToggle,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = accentColor,
+                checkedTrackColor = accentColor.copy(alpha = 0.4f),
+                uncheckedThumbColor = Color.LightGray,
+                uncheckedTrackColor = Color.Gray
+            )
+        )
     }
 }
 
 @Composable
-fun fSettingAction(title: String, onClick: () -> Unit) {
+fun fSettingAction(title: String, accentColor: Color, textColor: Color, onClick: () -> Unit) {
     Text(
         text = title,
         fontSize = 18.sp,
-        color = Color(0xFF1976D2),
+        color = accentColor,
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
