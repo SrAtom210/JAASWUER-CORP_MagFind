@@ -84,11 +84,13 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                     label = { Text("Usuario", color = textColor) },
                     textStyle = LocalTextStyle.current.copy(color = textColor),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        cursorColor = accentColor,
-                        focusedIndicatorColor = accentColor,
-                        unfocusedIndicatorColor = accentColor
+                        focusedTextColor = Color.DarkGray,
+                        unfocusedTextColor = Color.DarkGray,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        cursorColor = Color.DarkGray,
+                        focusedIndicatorColor = Color.DarkGray,
+                        unfocusedIndicatorColor = Color.Gray
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -103,11 +105,13 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        cursorColor = accentColor,
-                        focusedIndicatorColor = accentColor,
-                        unfocusedIndicatorColor = accentColor
+                        focusedTextColor = Color.DarkGray,
+                        unfocusedTextColor = Color.DarkGray,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        cursorColor = Color.DarkGray,
+                        focusedIndicatorColor = Color.DarkGray,
+                        unfocusedIndicatorColor = Color.Gray
                     ),
                 )
                 TextButton(
