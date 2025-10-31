@@ -24,7 +24,7 @@ class CategoriasViewModel : ViewModel() {
                     CategoriaDto(id_categoria = index + 1, nombre = nombre)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                e.printStackTrace() //
                 _categorias.value = emptyList()
             }
         }
