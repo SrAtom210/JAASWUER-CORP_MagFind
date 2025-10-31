@@ -5,7 +5,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,12 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat.enableEdgeToEdge
 import androidx.navigation.NavHostController
 import com.example.magfind.R
 import com.example.magfind.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
+import com.example.magfind.RetrofitClient
+import com.example.magfind.apis.FCuentaApi
 
 @Composable
 fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
@@ -222,44 +222,60 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                             }
                         },
                         confirmButton = {
+                            val context = LocalContext.current
+                            val scope = rememberCoroutineScope()
+                            val repo = com.example.magfind.apis.AuthRepository()
+
+                            val palabrasProhibidas = ArrayDeque(listOf("admin", "root", "soporte", "test", "usuario"))
+
                             Button(
                                 onClick = {
-                                    showDialog = true
                                     scope.launch {
-                                        try {
-                                            val usernameTrimmed = username.substringBefore('@')
-                                            val success = repo.register(usernameTrimmed, username, password)
+                                        val nombreUsuario = email.substringBefore('@').trim().lowercase()
 
-                                            if (success) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Registro exitoso. Ahora puedes iniciar sesión.",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Error al registrar usuario. Inténtalo nuevamente.",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                                        if (nombreUsuario.isEmpty()) {
+                                            Toast.makeText(context, "El nombre de usuario no puede estar vacío.", Toast.LENGTH_LONG).show()
+                                            return@launch
+                                        }
+
+                                        if (palabrasProhibidas.any { it.equals(nombreUsuario, ignoreCase = true) }) {
+                                            Toast.makeText(context, "La palabra '$nombreUsuario' está prohibida como nombre de usuario.", Toast.LENGTH_LONG).show()
+                                            return@launch
+                                        }
+
+                                        try {
+                                            val api = RetrofitClient.retrofit.create(FCuentaApi::class.java)
+                                            val response = api.verificarEmail(email)
+                                            if (response.data != null) {
+                                                Toast.makeText(context, "El correo ya está registrado.", Toast.LENGTH_LONG).show()
+                                                return@launch
                                             }
                                         } catch (e: Exception) {
-                                            Toast.makeText(
-                                                context,
-                                                "Error al conectar con el servidor: ${e.message}",
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            Toast.makeText(context, "Error al verificar duplicado: ${e.message}", Toast.LENGTH_LONG).show()
+                                            e.printStackTrace()
+                                            return@launch
+                                        }
+
+                                        try {
+                                            val success = repo.register(nombreUsuario, email, nuevaPassword)
+                                            if (success) {
+                                                Toast.makeText(context, "Registro exitoso. Ahora puedes iniciar sesión.", Toast.LENGTH_LONG).show()
+                                                showDialog = false
+                                                navController.navigate("home")
+                                            } else {
+                                                Toast.makeText(context, "Error al registrar usuario. Inténtalo nuevamente.", Toast.LENGTH_LONG).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Error al conectar con el servidor: ${e.message}", Toast.LENGTH_LONG).show()
                                             e.printStackTrace()
                                         }
                                     }
-                                    showDialog = false
-                                    // Navega a la pantalla de home o a donde necesites
-                                    navController.navigate("home")
                                 }
                             ) {
                                 Text("Registrarse")
                             }
-                        },
+                        }
+                        ,
                         dismissButton = {
                             TextButton(
                                 onClick = {
