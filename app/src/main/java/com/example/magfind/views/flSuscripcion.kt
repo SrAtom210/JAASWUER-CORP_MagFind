@@ -1,5 +1,12 @@
 package com.example.magfind.views
 
+import android.R
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -87,6 +95,7 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                     price = "Gratis",
                     description = "Ideal para comenzar.\nIncluye funciones básicas y limitadas.",
                     isSelected = selectedPlan == "Essential",
+                    selectedColor = Color(0xFFA3C8ED),
                     onSelect = { selectedPlan = "Essential" }
                 )
 
@@ -95,6 +104,7 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                     price = "$4.99 / mes",
                     description = "Funciones avanzadas y mayor almacenamiento.",
                     isSelected = selectedPlan == "Plus",
+                    selectedColor = Color(0xFFBCA7C1),
                     onSelect = { selectedPlan = "Plus" }
                 )
 
@@ -103,6 +113,7 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                     price = "$9.99 / mes",
                     description = "Acceso completo con soporte prioritario.",
                     isSelected = selectedPlan == "Platinum",
+                    selectedColor = Color(0xFFD9D9D9),
                     onSelect = { selectedPlan = "Platinum" }
                 )
 
@@ -111,6 +122,7 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                     price = "$19.99 / mes",
                     description = "Diseñado para equipos y empresas.\nGestión multiusuario y estadísticas.",
                     isSelected = selectedPlan == "Business",
+                    selectedColor = Color(0xFFF9F9F0),
                     onSelect = { selectedPlan = "Business" }
                 )
 
@@ -133,29 +145,59 @@ fun PlanCard(
     price: String,
     description: String,
     isSelected: Boolean,
+    selectedColor: Color, // ✅ corregido: coma fuera de lugar
     onSelect: () -> Unit
 ) {
+    // 🎨 Color base del plan (según nombre)
+    val colorPlan = when (title) {
+        "Essential" -> Color(0xFF3084D7)
+        "Plus" -> Color(0xFF572364)
+        "Platinum" -> Color(0xFF3A3A3A)
+        "Business" -> Color(0xFF998100)
+        else -> Color(0xFFD1E9FF)
+    }
+
+    // 🪄 Animación del color del borde
+    val animatedBorderColor by animateColorAsState(
+        targetValue = if (isSelected) colorPlan else Color.Transparent,
+        animationSpec = tween(durationMillis = 800, easing = LinearEasing)
+    )
+
+    // 🔹 Animación del grosor del borde
+    val animatedBorderWidth by animateDpAsState(
+        targetValue = if (isSelected) 3.dp else 2.dp,
+        animationSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
+    )
+
+    // ✨ Animación ligera de elevación
+    val animatedElevation by animateDpAsState(
+        targetValue = if (isSelected) 6.dp else 2.dp,
+        animationSpec = tween(durationMillis = 400)
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth(0.85f)
-            .padding(vertical = 8.dp)
+            .padding(vertical = 10.dp)
             .clickable { onSelect() },
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(animatedBorderWidth, animatedBorderColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color(0xFFD1E9FF) else Color(0xFFF7FBFF)
-        ),
-        elevation = CardDefaults.cardElevation(if (isSelected) 6.dp else 2.dp)
+            containerColor = if (isSelected) selectedColor else Color(0xFFF7FBFF)
+        )
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
+            Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = colorPlan)
             Text(price, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
             Text(
                 description,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
-                color = Color.Gray,
+                color = Color.Black,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
             Button(
@@ -173,3 +215,4 @@ fun PlanCard(
         }
     }
 }
+

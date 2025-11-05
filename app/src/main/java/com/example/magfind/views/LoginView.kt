@@ -27,6 +27,7 @@ import com.example.magfind.R
 import com.example.magfind.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
+import org.intellij.lang.annotations.JdkConstants
 
 @Composable
 fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
@@ -61,7 +62,7 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                Image(painter = painterResource(R.drawable.magfind), contentDescription = "logo")
+                Image(painter = painterResource(R.drawable.magfind), modifier = Modifier.size(250.dp), contentDescription = "logo")
                 val gradient = Brush.linearGradient(
                     colors = listOf(Color(0xFF2196F3), Color(0xFF00BCD4))
                 )
@@ -77,51 +78,57 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                 )
+                Spacer(modifier = Modifier.height(15.dp))
                 // Campo de usuario
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Usuario", color = textColor) },
+                    label = { Text("Usuario", color = textColor, fontSize = 20.sp) },
                     textStyle = LocalTextStyle.current.copy(color = textColor),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        cursorColor = accentColor,
-                        focusedIndicatorColor = accentColor,
-                        unfocusedIndicatorColor = accentColor
+                        focusedTextColor = Color.DarkGray,
+                        unfocusedTextColor = Color.DarkGray,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        cursorColor = Color.DarkGray,
+                        focusedIndicatorColor = Color.DarkGray,
+                        unfocusedIndicatorColor = Color.Gray
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().size(65.dp)
                 )
-
+                Spacer(modifier = Modifier.height(7.dp))
                 // Campo de contraseña
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Contraseña", color = textColor) },
+                    label = { Text("Contraseña", color = textColor, fontSize = 20.sp) },
                     textStyle = LocalTextStyle.current.copy(color = textColor),
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().size(65.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        cursorColor = accentColor,
-                        focusedIndicatorColor = accentColor,
-                        unfocusedIndicatorColor = accentColor
+                        focusedTextColor = Color.DarkGray,
+                        unfocusedTextColor = Color.DarkGray,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        cursorColor = Color.DarkGray,
+                        focusedIndicatorColor = Color.DarkGray,
+                        unfocusedIndicatorColor = Color.Gray
                     ),
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 TextButton(
                     onClick = { navController.navigate("OContraseña") },
                     modifier = Modifier
-                        .fillMaxWidth()
                         .align(Alignment.End)
                 ) {
-                    Text("Olvidé mi Contraseña", color = Color.Black, textAlign = TextAlign.Right)
+                    Text("Olvidé mi Contraseña", color = Color.Black, textAlign = TextAlign.Right, fontSize = 18.sp)
                 }
                 // Botón de login
                 val scope = rememberCoroutineScope()
                 val context = LocalContext.current
                 val repo = com.example.magfind.apis.AuthRepository()
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Button(
                     onClick = {
@@ -160,12 +167,14 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = accentColor)
                 ) {
-                    Text("Iniciar sesión", color = if (isDark) Color.Black else Color.White)
+                    Text("Iniciar sesión", fontSize = 25.sp, color = if (isDark) Color.Black else Color.White)
                 }
+
+                Spacer(modifier = Modifier.height(15.dp))
 
                 Button(
                     onClick = { navController.navigate("home") },
-                    modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Color.Black)),
+                    modifier = Modifier.fillMaxWidth().border(BorderStroke(2.dp, Color.Black)),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                 )
                 {
@@ -177,20 +186,21 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                             painter = painterResource(id = R.drawable.gmail),
                             contentDescription = "Gmail",
                             tint = Color.Unspecified,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(45.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Continuar con Gmail", color = Color.Black)
+                        Text("Continuar con Gmail", color = Color.Black, fontSize = 18.sp)
                         /*navController.navigate("Categoria")*/
                     }
                 }
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Enlace de registro
                 TextButton(
                     onClick = {showDialog = true},
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Registrarse", color = textColor)
+                    Text("¿No tienes cuenta aún? Registrate", color = textColor, fontSize = 18.sp)
                 }
                 if (showDialog) {
                     AlertDialog(
