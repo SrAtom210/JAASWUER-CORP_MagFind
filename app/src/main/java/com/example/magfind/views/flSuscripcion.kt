@@ -93,7 +93,12 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                 PlanCard(
                     title = "Essential",
                     price = "Gratis",
-                    description = "Ideal para comenzar.\nIncluye funciones básicas y limitadas.",
+                    description = "Sincronización con 1 cuenta\n" +
+                            "Clasificación con IA\n" +
+                            "Hasta 5 Categorías\n" +
+                            "Aprendizaje Básico\n" +
+                            "Búsqueda Estándar\n" +
+                            "Soporte Comunitario",
                     isSelected = selectedPlan == "Essential",
                     selectedColor = Color(0xFFA3C8ED),
                     onSelect = { selectedPlan = "Essential" }
@@ -102,7 +107,11 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                 PlanCard(
                     title = "Plus",
                     price = "$4.99 / mes",
-                    description = "Funciones avanzadas y mayor almacenamiento.",
+                    description = "Hasta 50 Categorías\n" +
+                            "Sincronización con 3 cuentas\n" +
+                            "Reglas avanzadas\n" +
+                            "Reentrenamiento Semanal de IA\n" +
+                            "Sin Anuncios",
                     isSelected = selectedPlan == "Plus",
                     selectedColor = Color(0xFFBCA7C1),
                     onSelect = { selectedPlan = "Plus" }
@@ -111,7 +120,12 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                 PlanCard(
                     title = "Platinum",
                     price = "$9.99 / mes",
-                    description = "Acceso completo con soporte prioritario.",
+                    description = "Sincronización con 10 Cuentas\n" +
+                            "Reentrenamiento Diario de IA\n" +
+                            "Notificaciones Inteligentes\n" +
+                            "Busqueda Avanzada\n" +
+                            "Sincronización multi-dispositivos\n" +
+                            "Soporte Premium",
                     isSelected = selectedPlan == "Platinum",
                     selectedColor = Color(0xFFD9D9D9),
                     onSelect = { selectedPlan = "Platinum" }
@@ -120,7 +134,12 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                 PlanCard(
                     title = "Business",
                     price = "$19.99 / mes",
-                    description = "Diseñado para equipos y empresas.\nGestión multiusuario y estadísticas.",
+                    description = "Cuentas Ilimitadas \n" +
+                            "Panel de Administración \n" +
+                            "Categorías Compartidas \n" +
+                            "Asignación de Correos \n" +
+                            "Soporte Dedicado \n" +
+                            "Integraciones Futuras",
                     isSelected = selectedPlan == "Business",
                     selectedColor = Color(0xFFF9F9F0),
                     onSelect = { selectedPlan = "Business" }
@@ -191,14 +210,14 @@ fun PlanCard(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = colorPlan)
-            Text(price, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+            Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = colorPlan, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text(price, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.Black, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             Text(
                 description,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 color = Color.Black,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
             )
             Button(
                 onClick = onSelect,
