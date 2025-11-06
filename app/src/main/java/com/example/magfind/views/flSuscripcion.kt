@@ -106,7 +106,7 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
 
                 PlanCard(
                     title = "Plus",
-                    price = "$4.99 / mes",
+                    price = "$50 / mes",
                     description = "Hasta 50 Categorías\n" +
                             "Sincronización con 3 cuentas\n" +
                             "Reglas avanzadas\n" +
@@ -119,7 +119,7 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
 
                 PlanCard(
                     title = "Platinum",
-                    price = "$9.99 / mes",
+                    price = "$150 / mes",
                     description = "Sincronización con 10 Cuentas\n" +
                             "Reentrenamiento Diario de IA\n" +
                             "Notificaciones Inteligentes\n" +
@@ -133,7 +133,7 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
 
                 PlanCard(
                     title = "Business",
-                    price = "$19.99 / mes",
+                    price = "$199 / mes",
                     description = "Cuentas Ilimitadas \n" +
                             "Panel de Administración \n" +
                             "Categorías Compartidas \n" +
