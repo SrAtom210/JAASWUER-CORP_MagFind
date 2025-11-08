@@ -2,7 +2,7 @@ package com.example.magfind.models
 
 data class CuentaResponse(
     val status: String,
-    val data: CuentaData
+    val usuario: CuentaData
 )
 
 data class CuentaData(

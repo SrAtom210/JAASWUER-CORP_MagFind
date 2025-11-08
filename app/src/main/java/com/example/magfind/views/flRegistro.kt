@@ -137,7 +137,7 @@ fun fRegistroView(navController: NavController) {
                     )
                 )
 
-                // Botón de login
+                // Botón de registro
                 Button(
                     onClick = {},
                     modifier = Modifier.fillMaxWidth().padding(top = 20.dp),

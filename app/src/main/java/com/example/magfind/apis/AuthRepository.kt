@@ -13,13 +13,21 @@ class AuthRepository {
     suspend fun login(username: String, password: String): String? {
         return try {
             val request = LoginRequest(username, password)
-            val response: LoginResponse = api.login(request)
-            response.token
+            val response = api.login(request)
+
+            // Si api.login devuelve Response<LoginResponse>
+            if (response.isSuccessful) {
+                response.body()?.token
+            } else {
+                Log.e("LOGIN", "Error HTTP ${response.code()}")
+                null
+            }
         } catch (e: Exception) {
             Log.e("LOGIN_EXCEPTION", "Error: ${e.message}")
             null
         }
     }
+
 
     // --- REGISTRO ---
     suspend fun register(nombre: String, username: String, password: String): Boolean {
@@ -28,23 +36,28 @@ class AuthRepository {
 
             val requestBody = hashMapOf<String, Any>(
                 "nombre" to nombreFinal,
-                "username" to username,
-                "password" to password,
-                "email" to username
+                "username" to username.trim(),
+                "password" to password.trim(),
+                "email" to username.trim()
             )
-
             val response = RetrofitClient.rawClient().post("/register", requestBody)
 
+            Log.d("REGISTER_CODE", "Código HTTP: ${response.code()}")
+            Log.d("REGISTER_ERRORBODY", "ErrorBody (si hay): ${response.errorBody()?.string()}")
+
             if (response.isSuccessful) {
-                Log.d("REGISTER", "Usuario registrado correctamente")
+                Log.d("REGISTER", "✅ Usuario registrado correctamente ($nombreFinal)")
                 true
             } else {
-                Log.e("REGISTER", "Error: ${response.errorBody()?.string()}")
+                Log.e("REGISTER", "❌ Error al registrar usuario: ${response.message()}")
                 false
             }
         } catch (e: Exception) {
-            Log.e("REGISTER_EXCEPTION", "Error: ${e.message}")
+            Log.e("REGISTER_EXCEPTION", "💥 Excepción en register(): ${e.message}", e)
             false
         }
     }
+
+
+
 }

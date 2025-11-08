@@ -3,6 +3,8 @@ package com.example.magfind.apis
 import android.util.Log
 import com.example.magfind.RetrofitClient
 import com.example.magfind.models.CuentaData
+import com.example.magfind.models.CuentaResponse
+import retrofit2.http.GET
 
 class CuentaRepository {
 
@@ -11,8 +13,10 @@ class CuentaRepository {
     suspend fun getCuenta(token: String): CuentaData? {
         return try {
             val response = api.obtenerCuenta(token)
-            if (response.status == "ok") {
-                response.data
+            Log.d("CuentaRepository", "Respuesta del servidor: $response")
+
+            if (response.status.lowercase() == "ok") {
+                response.usuario
             } else {
                 null
             }

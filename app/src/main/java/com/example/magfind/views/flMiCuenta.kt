@@ -107,7 +107,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // 🔹 Detalles de cuenta dinámicos
+                    //  Detalles de cuenta dinámicos
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF4FF)),

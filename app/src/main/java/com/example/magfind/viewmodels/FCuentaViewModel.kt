@@ -1,5 +1,6 @@
 package com.example.magfind.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
@@ -28,6 +29,7 @@ class CuentaViewModel : ViewModel() {
     fun cargarCuenta(token: String?) {
         if (token.isNullOrBlank()) {
             _error.value = "Token no válido"
+
             return
         }
 
@@ -35,6 +37,8 @@ class CuentaViewModel : ViewModel() {
             _loading.value = true
             try {
                 val result = repo.getCuenta(token)
+                Log.d("TOKEN", "TOKEN DE MI CUENTA: $token")
+
                 if (result != null) {
                     _cuenta.value = result
                 } else {

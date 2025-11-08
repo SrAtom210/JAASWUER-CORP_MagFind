@@ -20,12 +20,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.magfind.RetrofitClient
 import com.example.magfind.SessionManager
+import com.example.magfind.apis.CorreosResponse
 import com.example.magfind.apis.FCorreosApi
 import com.example.magfind.components.fPlantilla
 import com.example.magfind.models.cCorreo
-import com.example.magfind.models.CategoriasResponse
 import com.example.magfind.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,14 +38,13 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
     val retrofit = RetrofitClient.retrofit
     val correosApi = retrofit.create(FCorreosApi::class.java)
 
-    var categorias by remember { mutableStateOf<CategoriasResponse?>(null) }
+    var categorias by remember { mutableStateOf<CorreosResponse?>(null) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
-    // Token actual del usuario logueado
     val token = SessionManager.token ?: ""
 
-    // Llamada a la API
+    // Cargar datos
     LaunchedEffect(Unit) {
         try {
             if (token.isNotEmpty()) {
@@ -81,55 +82,109 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
                 )
             }
         ) { innerPadding ->
-            when {
-                errorMsg != null -> Text(
-                    text = errorMsg!!,
-                    color = Color.Red,
-                    modifier = Modifier.padding(20.dp)
-                )
-
-                categorias == null -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color(0xFF1976D2))
-                }
-
-                else -> LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                ) {
-                    categorias!!.forEach { (categoria, correos) ->
-                        item {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        expandedStates[categoria] = !(expandedStates[categoria] ?: false)
-                                    }
-                                    .padding(vertical = 12.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (expandedStates[categoria] == true)
-                                        Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = Color(0xFF1976D2)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = categoria,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1976D2)
-                                )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                when {
+                    errorMsg != null -> Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = errorMsg!!, color = Color.Red)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(onClick = {
+                            scope.launch {
+                                try {
+                                    categorias = correosApi.obtenerCorreos(token)
+                                    errorMsg = null
+                                } catch (e: Exception) {
+                                    errorMsg = "Error al recargar: ${e.message}"
+                                }
                             }
-                            AnimatedVisibility(visible = expandedStates[categoria] == true) {
-                                Column {
-                                    correos.forEach { correo ->
-                                        fCorreoCard(correo)
+                        }) {
+                            Text("Reintentar")
+                        }
+                    }
+
+                    categorias == null -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color(0xFF1976D2))
+                    }
+
+                    else -> {
+                        val mapaCategorias = categorias!!.categorias
+
+                        if (mapaCategorias.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No hay correos clasificados aún", color = Color.Gray)
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                            ) {
+                                mapaCategorias.forEach { (categoria, correos) ->
+                                    item {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    expandedStates[categoria] =
+                                                        !(expandedStates[categoria] ?: false)
+                                                }
+                                                .padding(vertical = 12.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (expandedStates[categoria] == true)
+                                                    Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowRight,
+                                                contentDescription = null,
+                                                tint = Color(0xFF1976D2)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = categoria,
+                                                fontSize = 20.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF1976D2)
+                                            )
+                                            Spacer(modifier = Modifier.weight(1f))
+                                            Text(
+                                                text = "${correos.size}",
+                                                fontSize = 14.sp,
+                                                color = Color.DarkGray,
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            )
+                                        }
+
+                                        AnimatedVisibility(visible = expandedStates[categoria] == true) {
+                                            Column {
+                                                if (correos.isEmpty()) {
+                                                    Text(
+                                                        text = "No hay correos en esta categoría",
+                                                        modifier = Modifier.padding(start = 32.dp, bottom = 8.dp),
+                                                        color = Color.Gray
+                                                    )
+                                                } else {
+                                                    correos.forEach { correo ->
+                                                        fCorreoCard(correo) {
+                                                            navController.navigate("CorreoDetail/${correo.id}")
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -142,22 +197,35 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
 }
 
 @Composable
-fun fCorreoCard(correo: cCorreo) {
+fun fCorreoCard(correo: cCorreo, onClick: (() -> Unit)? = null) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .clickable { },
+            .clickable { onClick?.invoke() },
         colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF4FF)),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = correo.remitente,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = Color(0xFF0D47A1)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = correo.remitente,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color(0xFF0D47A1)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                correo.fecha.let {
+                    Text(
+                        text = formatFecha(it),
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
                 text = correo.asunto,
                 fontSize = 15.sp,
@@ -165,6 +233,9 @@ fun fCorreoCard(correo: cCorreo) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = correo.descripcion,
                 fontSize = 14.sp,
@@ -173,5 +244,27 @@ fun fCorreoCard(correo: cCorreo) {
                 overflow = TextOverflow.Ellipsis
             )
         }
+    }
+}
+
+private fun formatFecha(fechaStr: String): String {
+    return try {
+        val parseFormats = listOf(
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        )
+        var date: Date? = null
+        for (fmt in parseFormats) {
+            try {
+                date = fmt.parse(fechaStr)
+                if (date != null) break
+            } catch (_: Exception) { }
+        }
+        if (date == null) return fechaStr
+        val out = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        out.format(date)
+    } catch (e: Exception) {
+        fechaStr
     }
 }

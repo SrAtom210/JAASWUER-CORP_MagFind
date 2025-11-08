@@ -5,5 +5,6 @@ package com.example.magfind
  */
 object SessionManager {
     var token: String? = null
+
     var username: String? = null
 }

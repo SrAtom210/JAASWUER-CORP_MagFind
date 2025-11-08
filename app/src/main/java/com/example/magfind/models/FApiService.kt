@@ -1,5 +1,6 @@
 package com.example.magfind.models
 
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -9,7 +10,9 @@ import retrofit2.http.POST
 // ===== DTOs =====
 data class CategoriaDto(
     val id_categoria: Int,
-    val nombre: String
+    val id_usuario: Int,
+    val nombre: String,
+    val regla: String? = null
 )
 
 // Respuesta real del backend
@@ -32,7 +35,9 @@ interface ApiService {
     @GET("categoria/listar/{token}")
     suspend fun getCategorias(@Path("token") token: String): CategoriaListResponse
 
-    // Login (por si lo usas aquí)
+    /// ApiService.kt
     @POST("login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+
 }

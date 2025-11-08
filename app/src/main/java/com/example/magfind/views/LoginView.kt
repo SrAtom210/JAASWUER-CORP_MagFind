@@ -33,6 +33,13 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Estado para controlar la visibilidad del diálogo de registro
+    var showDialog by remember { mutableStateOf(false) }
+    // Estados para los campos de texto del diálogo
+    var email by remember { mutableStateOf("") }
+    var nuevaPassword by remember { mutableStateOf("") }
+
+
     val isDark = themeViewModel.isDarkMode.collectAsState().value
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
     val textColor = if (isDark) Color.White else Color.DarkGray
@@ -107,7 +114,14 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                         unfocusedIndicatorColor = accentColor
                     ),
                 )
-
+                TextButton(
+                    onClick = { navController.navigate("OContraseña") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.End)
+                ) {
+                    Text("Olvidé mi Contraseña", color = Color.Black, textAlign = TextAlign.Right)
+                }
 
                 // Botón de login
                 val scope = rememberCoroutineScope()
@@ -154,8 +168,6 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                     Text("Iniciar sesión", color = if (isDark) Color.Black else Color.White)
                 }
 
-                Text("------o------")
-
                 Button(
                     onClick = { navController.navigate("Categorias") },
                     modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Color.Black)),
@@ -198,44 +210,104 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                         /*navController.navigate("Categoria")*/
                     }
                 }
-
                 // Enlace de registro
                 TextButton(
-                    onClick = {
-                        scope.launch {
-                            try {
-                                val usernameTrimmed = username.substringBefore('@')
-                                val success = repo.register(usernameTrimmed, username, password)
-
-                                if (success) {
-                                    Toast.makeText(
-                                        context,
-                                        "Registro exitoso. Ahora puedes iniciar sesión.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Error al registrar usuario. Inténtalo nuevamente.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            } catch (e: Exception) {
-                                Toast.makeText(
-                                    context,
-                                    "Error al conectar con el servidor: ${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                e.printStackTrace()
-                            }
-                        }
-                    },
+                    onClick = { showDialog = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Registrarse", color = textColor)
+                    Text("¿Aún no tienes una cuenta? Regístrate", color = textColor)
+                }
+                // Si el diálogo debe mostrarse, lo componemos
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            // Oculta el diálogo si el usuario toca fuera de él
+                            showDialog = false
+                        },
+                        title = {
+                            Text(text = "Registro Rápido")
+                        },
+                        text = {
+                            // Columna para organizar los campos de texto
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedTextField(
+                                    value = email,
+                                    onValueChange = { email = it },
+                                    label = { Text("Correo Electrónico") }
+                                )
+                                OutlinedTextField(
+                                    value = nuevaPassword,
+                                    onValueChange = { nuevaPassword = it },
+                                    label = { Text("Contraseña") },
+                                    visualTransformation = PasswordVisualTransformation()
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    if (email.isBlank() || nuevaPassword.isBlank()) {
+                                        Toast.makeText(
+                                            context,
+                                            "Por favor, completa todos los campos.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        return@Button
+                                    }
+
+                                    scope.launch {
+                                        try {
+                                            // Extrae el nombre antes del @ y limpia espacios
+                                            val nombreTrimmed = email.substringBefore('@').trim()
+                                            val correoTrimmed = email.trim()
+
+                                            val success = repo.register(nombreTrimmed, correoTrimmed, nuevaPassword)
+
+                                            if (success) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Registro exitoso.",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                                // Oculta el diálogo después de un registro exitoso
+                                                showDialog = false
+
+                                                navController.navigate("Login");
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Error al registrar usuario. Inténtalo nuevamente.",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(
+                                                context,
+                                                "Error al conectar con el servidor: ${e.message}",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                            ) {
+                                Text("Registrarse")
+                            }
+                        }
+                        ,
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    // Oculta el diálogo
+                                    showDialog = false
+                                }
+                            ) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
                 }
             }
         }
-
     }
 }
