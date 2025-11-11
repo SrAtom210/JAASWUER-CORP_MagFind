@@ -40,7 +40,7 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
     var editingCategoria by remember { mutableStateOf<CategoriaDto?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
-    // 🔹 Estados para confirmación de eliminación
+    // Estados para confirmación de eliminación
     var categoriaAEliminar by remember { mutableStateOf<CategoriaDto?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -193,7 +193,7 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                     )
                 }
 
-                // ✏️ Diálogo agregar/editar
+                // Diálogo agregar/editar
                 if (showDialog) {
                     Dialog(onDismissRequest = { showDialog = false }) {
                         Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 8.dp) {

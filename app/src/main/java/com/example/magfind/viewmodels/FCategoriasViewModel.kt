@@ -22,10 +22,8 @@ class CategoriasViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val lista = repo.listarCategorias(token)
-                Log.d("CategoriasVM", "Respuesta API: $lista")
                 _categorias.value = lista
             } catch (e: Exception) {
-                Log.e("CategoriasVM", "Error cargando categorías: ${e.message}")
             }
         }
     }

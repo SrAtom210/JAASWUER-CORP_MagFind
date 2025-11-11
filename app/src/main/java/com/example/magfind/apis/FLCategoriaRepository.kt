@@ -46,10 +46,8 @@ class CategoriaRepository {
     suspend fun listarCategorias(token: String): List<CategoriaDto> {
         return try {
             val response: CategoriasResponse = api.listar(token)
-            Log.d("CategoriaRepository", "Respuesta cruda: $response")
             response.categorias
         } catch (e: Exception) {
-            Log.e("CategoriaRepository", "Error al listar categorías: ${e.message}")
             emptyList()
         }
     }
@@ -59,7 +57,6 @@ class CategoriaRepository {
             val body = NuevaCategoriaRequest(nombre, regla)
             api.agregar(token, body)
         } catch (e: Exception) {
-            Log.e("CategoriaRepository", "Error al agregar categoría: ${e.message}")
         }
     }
 
@@ -68,7 +65,6 @@ class CategoriaRepository {
             val body = NuevaCategoriaRequest(nombre, regla)
             api.editar(token, id, body)
         } catch (e: Exception) {
-            Log.e("CategoriaRepository", "Error al editar categoría: ${e.message}")
         }
     }
 
@@ -76,7 +72,6 @@ class CategoriaRepository {
         try {
             api.eliminar(token, id)
         } catch (e: Exception) {
-            Log.e("CategoriaRepository", "Error al eliminar categoría: ${e.message}")
         }
     }
 }

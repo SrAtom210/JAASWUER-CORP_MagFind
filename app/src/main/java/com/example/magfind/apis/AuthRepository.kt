@@ -15,15 +15,12 @@ class AuthRepository {
             val request = LoginRequest(username, password)
             val response = api.login(request)
 
-            // Si api.login devuelve Response<LoginResponse>
             if (response.isSuccessful) {
                 response.body()?.token
             } else {
-                Log.e("LOGIN", "Error HTTP ${response.code()}")
                 null
             }
         } catch (e: Exception) {
-            Log.e("LOGIN_EXCEPTION", "Error: ${e.message}")
             null
         }
     }
@@ -42,18 +39,12 @@ class AuthRepository {
             )
             val response = RetrofitClient.rawClient().post("/register", requestBody)
 
-            Log.d("REGISTER_CODE", "Código HTTP: ${response.code()}")
-            Log.d("REGISTER_ERRORBODY", "ErrorBody (si hay): ${response.errorBody()?.string()}")
-
             if (response.isSuccessful) {
-                Log.d("REGISTER", "✅ Usuario registrado correctamente ($nombreFinal)")
                 true
             } else {
-                Log.e("REGISTER", "❌ Error al registrar usuario: ${response.message()}")
                 false
             }
         } catch (e: Exception) {
-            Log.e("REGISTER_EXCEPTION", "💥 Excepción en register(): ${e.message}", e)
             false
         }
     }
