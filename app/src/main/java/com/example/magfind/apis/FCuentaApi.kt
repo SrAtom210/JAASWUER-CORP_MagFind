@@ -4,6 +4,7 @@ package com.example.magfind.apis
 import com.example.magfind.models.CuentaResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface FCuentaApi {
     /**
@@ -11,4 +12,7 @@ interface FCuentaApi {
      */
     @GET("mi_cuenta/{token}")
     suspend fun obtenerCuenta(@Path("token") token: String): CuentaResponse
+
+    @GET("verificar_email")
+    suspend fun verificarEmail(@Query("email") email: String): CuentaResponse
 }
