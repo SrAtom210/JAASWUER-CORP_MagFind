@@ -18,9 +18,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.magfind.RetrofitClient
-import com.example.magfind.SessionManager
-import com.example.magfind.apis.FCorreosApi
+// --- CAMBIOS DE IMPORTS ---
+import com.example.magfind.RetrofitClient // <-- Bien
+import com.example.magfind.SessionManager // <-- Bien
+// import com.example.magfind.apis.FCorreosApi // <--- BORRADO (Ya no se usa)
+// -------------------------
 import com.example.magfind.components.fPlantilla
 import com.example.magfind.models.cCorreo
 import com.example.magfind.models.CategoriasResponse
@@ -33,26 +35,36 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val retrofit = RetrofitClient.retrofit
-    val correosApi = retrofit.create(FCorreosApi::class.java)
+    // --- CAMBIO DE LÓGICA ---
+    // val retrofit = RetrofitClient.retrofit // <--- BORRADO
+    // val correosApi = retrofit.create(FCorreosApi::class.java) // <--- BORRADO
+
+    // ¡ESTA ES LA LÍNEA CORRECTA!
+    // Usamos la instancia única de ApiService.
+    val correosApi = RetrofitClient.instance
+    // ------------------------
 
     var categorias by remember { mutableStateOf<CategoriasResponse?>(null) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
     // Token actual del usuario logueado
+    // (Asegúrate de que SessionManager.token se esté guardando como JWT)
     val token = SessionManager.token ?: ""
 
     // Llamada a la API
     LaunchedEffect(Unit) {
         try {
             if (token.isNotEmpty()) {
+                // Esta línea ahora funciona porque 'correosApi' es un 'ApiService'
+                // y 'ApiService' tiene la función 'obtenerCorreos'
                 categorias = correosApi.obtenerCorreos(token)
             } else {
                 errorMsg = "Token inválido. Inicia sesión nuevamente."
             }
         } catch (e: Exception) {
             errorMsg = "Error al cargar correos: ${e.message}"
+            e.printStackTrace() // Ayuda a ver el error real en Logcat
         }
     }
 

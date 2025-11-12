@@ -1,9 +1,11 @@
 package com.example.magfind.pnavigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.magfind.ui.theme.ThemeViewModel
 import com.example.magfind.views.*
 
@@ -34,6 +36,37 @@ fun NavManager(themeViewModel: ThemeViewModel) {
         }
         composable("Suscripcion") {
             fSuscripcionView(navController,themeViewModel)
+        }
+
+        composable(
+            route = "VerifyCode/{email}?isReset={isReset}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("isReset") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val isReset = backStackEntry.arguments?.getBoolean("isReset") ?: false
+            VerifyCodeView(navController, themeViewModel, email, isReset)
+        }
+
+        /**
+         * Ruta para la pantalla final de reseteo de contraseña.
+         * Recibe email y código como argumentos.
+         */
+        composable(
+            route = "SubmitNewPassword/{email}/{code}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("code") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val code = backStackEntry.arguments?.getString("code") ?: ""
+            SubmitNewPasswordView(navController, themeViewModel, email, code)
         }
     }
 }

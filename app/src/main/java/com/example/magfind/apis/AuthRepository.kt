@@ -2,18 +2,31 @@ package com.example.magfind.apis
 
 import android.util.Log
 import com.example.magfind.RetrofitClient
+import com.example.magfind.models.*
 import com.example.magfind.models.LoginRequest
-import com.example.magfind.models.LoginResponse
 
 class AuthRepository {
 
     private val api = RetrofitClient.instance
 
+    // --- REGISTRO (CORREGIDO) ---
+    suspend fun register(nombre: String, email: String, password: String): Boolean {
+        return try {
+            val request = RegisterRequest(username = nombre, email = email, password = password)
+            val response = api.register(request)
+            // Si la respuesta es "ok", el backend ya envió el correo
+            response.status == "ok"
+        } catch (e: Exception) {
+            Log.e("REGISTER_EXCEPTION", "Error: ${e.message}")
+            false
+        }
+    }
+
     // --- LOGIN ---
     suspend fun login(username: String, password: String): String? {
         return try {
             val request = LoginRequest(username, password)
-            val response: LoginResponse = api.login(request)
+            val response = api.login(request)
             response.token
         } catch (e: Exception) {
             Log.e("LOGIN_EXCEPTION", "Error: ${e.message}")
@@ -21,29 +34,54 @@ class AuthRepository {
         }
     }
 
-    // --- REGISTRO ---
-    suspend fun register(nombre: String, username: String, password: String): Boolean {
+    // --- VERIFICACIÓN DE EMAIL ---
+    suspend fun checkEmailDuplicate(email: String): Boolean {
         return try {
-            val nombreFinal = nombre.ifBlank { username.substringBefore('@') }
-
-            val requestBody = hashMapOf<String, Any>(
-                "nombre" to nombreFinal,
-                "username" to username,
-                "password" to password,
-                "email" to username
-            )
-
-            val response = RetrofitClient.rawClient().post("/register", requestBody)
-
-            if (response.isSuccessful) {
-                Log.d("REGISTER", "Usuario registrado correctamente")
-                true
-            } else {
-                Log.e("REGISTER", "Error: ${response.errorBody()?.string()}")
-                false
-            }
+            val response = api.verificarEmail(email)
+            response.status == "ok"
         } catch (e: Exception) {
-            Log.e("REGISTER_EXCEPTION", "Error: ${e.message}")
+            // Si da error (ej. 409), significa que ya existe
+            false
+        }
+    }
+
+    // --- CÓDIGOS Y PASSWORD ---
+    suspend fun requestVerificationCode(email: String): Boolean {
+        return try {
+            val request = EmailRequest(email)
+            val response = api.requestVerification(request)
+            response.status == "ok"
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun verifyCode(email: String, code: String): String? {
+        return try {
+            val request = VerifyCodeRequest(email, code)
+            val response = api.verifyCode(request)
+            response.token
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun requestPasswordReset(email: String): Boolean {
+        return try {
+            val request = EmailRequest(email)
+            val response = api.requestPasswordReset(request)
+            response.status == "ok"
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun submitPasswordReset(email: String, code: String, newPassword: String): Boolean {
+        return try {
+            val request = PasswordResetRequest(email, code, newPassword)
+            val response = api.submitPasswordReset(request)
+            response.status == "ok"
+        } catch (e: Exception) {
             false
         }
     }
