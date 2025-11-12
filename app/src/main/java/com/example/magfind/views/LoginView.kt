@@ -349,6 +349,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                             onValueChange = { regPassword = it },
                             label = { Text("Contraseña", color = textColor) },
                             textStyle = LocalTextStyle.current.copy(color = textColor),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             visualTransformation = PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth()
                         )
