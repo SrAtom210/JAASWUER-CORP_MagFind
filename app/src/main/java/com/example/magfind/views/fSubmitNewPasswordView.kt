@@ -2,6 +2,7 @@ package com.example.magfind.views
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+//import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,7 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+//import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+//import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -121,3 +124,69 @@ fun SubmitNewPasswordView(
         }
     }
 }
+/*
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun SubmitNewPasswordViewPreviewStandalone() {
+    // --- valores estáticos para el preview ---
+    val isDark = false
+    val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
+    val textColor = if (isDark) Color.White else Color.Black
+    val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = backgroundColor
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Crear Nueva Contraseña",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = accentColor
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+
+            OutlinedTextField(
+                value = "••••••••",
+                onValueChange = {},
+                label = { Text("Nueva Contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = "••••••••",
+                onValueChange = {},
+                label = { Text("Confirmar Contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = { /* sin acción en preview */ },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+            ) {
+                Text(
+                    text = "Guardar Contraseña",
+                    color = if (isDark) Color.Black else Color.White
+                )
+            }
+        }
+    }
+}*/

@@ -6,7 +6,7 @@ import com.example.magfind.models.CuentaData
 
 class CuentaRepository {
 
-    private val api = RetrofitClient.retrofit.create(FCuentaApi::class.java)
+    private val api = RetrofitClient.instance
 
     suspend fun getCuenta(token: String): CuentaData? {
         return try {

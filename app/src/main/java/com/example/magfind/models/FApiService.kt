@@ -1,68 +1,64 @@
 package com.example.magfind.models
 
+// ¡Asegúrate de que TODOS estos imports estén aquí!
+import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
-import retrofit2.http.Body
-import retrofit2.http.POST
 
-// ===== DTOs =====
-data class CategoriaDto(
-    val id_categoria: Int,
-    val nombre: String
-)
+// -----------------------------------------------------------------
+// ARCHIVO: models/FApiService.kt
+// (El contrato que le dice a Retrofit qué hacer)
+// -----------------------------------------------------------------
 
-// Respuesta real del backend
-data class CategoriaListResponse(
-    val categorias: List<String>
-)
-
-data class LoginRequest(
-    val username: String,
-    val password: String
-)
-
-data class LoginResponse(
-    val token: String
-)
-
-// ===== API =====
 interface ApiService {
-    // Categorías: GET /categoria/listar/{token}
-    @GET("categoria/listar/{token}")
-    suspend fun getCategorias(@Path("token") token: String): CategoriaListResponse
 
-    // Login (por si lo usas aquí)
+    // --- AUTENTICACIÓN ---
+    @POST("register")
+    suspend fun register(@Body request: RegisterRequest): GenericResponse
+
     @POST("login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
-    // --- NUEVOS ENDPOINTS PARA EMAILS ---
-
-    /**
-     * Solicita al backend que genere y envíe un código de verificación
-     * al email proporcionado. Esto se llama DESPUÉS de un registro exitoso.
-     */
     @POST("request-verification")
     suspend fun requestVerification(@Body request: EmailRequest): GenericResponse
 
-    /**
-     * Envía el código que el usuario escribió para que el backend lo valide.
-     * Si es exitoso, el backend debería marcar al usuario como 'activo'
-     * y quizás devolver un token de sesión.
-     */
     @POST("verify-code")
-    suspend fun verifyCode(@Body request: VerifyCodeRequest): LoginResponse // Devuelve LoginResponse para auto-loguear
+    suspend fun verifyCode(@Body request: VerifyCodeRequest): LoginResponse
 
-    /**
-     * Solicita un código de reseteo de contraseña para un email existente.
-     */
     @POST("request-password-reset")
     suspend fun requestPasswordReset(@Body request: EmailRequest): GenericResponse
 
-    /**
-     * Envía el código de reseteo y la nueva contraseña.
-     * El backend valida el código y, si es correcto, actualiza la contraseña.
-     */
     @POST("submit-password-reset")
     suspend fun submitPasswordReset(@Body request: PasswordResetRequest): GenericResponse
+
+    @GET("verificar_email")
+    suspend fun verificarEmail(@Query("email") email: String): GenericResponse
+
+    // --- CUENTA Y DATOS ---
+
+    @GET("cuenta/{token}")
+    suspend fun obtenerCuenta(@Path("token") token: String): CuentaResponse
+
+    // ¡¡ESTA ES LA LÍNEA CLAVE!!
+    // Debe devolver CategoriaListResponse
+    @GET("categoria/listar/{token}")
+    suspend fun getCategorias(@Path("token") token: String): CategoriaListResponse
+
+    @GET("correos/{token}")
+    suspend fun obtenerCorreos(@Path("token") token: String): CategoriasResponse
+
+    // --- CRUD CATEGORÍAS ---
+
+    @POST("categoria/agregar/{token}")
+    suspend fun agregarCategoria(@Path("token") token: String, @Body body: CategoriaPersonalizadaIn): GenericResponse
+
+    @PUT("categoria/editar/{token}/{id_categoria}")
+    suspend fun editarCategoria(@Path("token") token: String, @Path("id_categoria") id: Int, @Body body: CategoriaPersonalizadaIn): GenericResponse
+
+    @DELETE("categoria/eliminar/{token}/{id_categoria}")
+    suspend fun eliminarCategoria(@Path("token") token: String, @Path("id_categoria") id: Int): GenericResponse
 }
