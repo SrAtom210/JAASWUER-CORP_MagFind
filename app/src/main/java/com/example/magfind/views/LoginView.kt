@@ -209,7 +209,7 @@ fun LoginView(navController: NavHostController,themeViewModel: ThemeViewModel) {
                             showDialog = false
                         },
                         title = {
-                            Text(text = "Registro Rápido")
+                            Text(text = "Registro", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black, modifier = Modifier.fillMaxWidth())
                         },
                         text = {
                             // Columna para organizar los campos de texto

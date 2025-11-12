@@ -93,53 +93,53 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
                 PlanCard(
                     title = "Essential",
                     price = "Gratis",
-                    description = "Sincronización con 1 cuenta\n" +
-                            "Clasificación con IA\n" +
-                            "Hasta 5 Categorías\n" +
-                            "Aprendizaje Básico\n" +
-                            "Búsqueda Estándar\n" +
-                            "Soporte Comunitario",
+                    description = "• Sincronización con 1 cuenta\n" +
+                            "• Clasificación con IA\n" +
+                            "• Hasta 5 Categorías\n" +
+                            "• Aprendizaje Básico\n" +
+                            "• Búsqueda Estándar\n" +
+                            "• Soporte Comunitario.",
                     isSelected = selectedPlan == "Essential",
-                    selectedColor = Color(0xFFA3C8ED),
+                    selectedColor = Color(0xFFD6E6F7),
                     onSelect = { selectedPlan = "Essential" }
                 )
 
                 PlanCard(
                     title = "Plus",
                     price = "$50 / mes",
-                    description = "Hasta 50 Categorías\n" +
-                            "Sincronización con 3 cuentas\n" +
-                            "Reglas avanzadas\n" +
-                            "Reentrenamiento Semanal de IA\n" +
-                            "Sin Anuncios",
+                    description = "• Hasta 50 Categorías\n" +
+                            "• Sincronización con 3 cuentas\n" +
+                            "• Reglas avanzadas\n" +
+                            "• Reentrenamiento Semanal de IA\n" +
+                            "• Sin Anuncios",
                     isSelected = selectedPlan == "Plus",
-                    selectedColor = Color(0xFFBCA7C1),
+                    selectedColor = Color(0xFFDDD3E0),
                     onSelect = { selectedPlan = "Plus" }
                 )
 
                 PlanCard(
                     title = "Platinum",
                     price = "$150 / mes",
-                    description = "Sincronización con 10 Cuentas\n" +
-                            "Reentrenamiento Diario de IA\n" +
-                            "Notificaciones Inteligentes\n" +
-                            "Busqueda Avanzada\n" +
-                            "Sincronización multi-dispositivos\n" +
-                            "Soporte Premium",
+                    description = "• Sincronización con 10 Cuentas\n" +
+                            "• Reentrenamiento Diario de IA\n" +
+                            "• Notificaciones Inteligentes\n" +
+                            "• Busqueda Avanzada\n" +
+                            "• Sincronización multi-dispositivos\n" +
+                            "• Soporte Premium",
                     isSelected = selectedPlan == "Platinum",
-                    selectedColor = Color(0xFFD9D9D9),
+                    selectedColor = Color(0xFFF7F7F7),
                     onSelect = { selectedPlan = "Platinum" }
                 )
 
                 PlanCard(
                     title = "Business",
                     price = "$199 / mes",
-                    description = "Cuentas Ilimitadas \n" +
-                            "Panel de Administración \n" +
-                            "Categorías Compartidas \n" +
-                            "Asignación de Correos \n" +
-                            "Soporte Dedicado \n" +
-                            "Integraciones Futuras",
+                    description = "• Cuentas Ilimitadas \n" +
+                            "• Panel de Administración \n" +
+                            "• Categorías Compartidas \n" +
+                            "• Asignación de Correos \n" +
+                            "• Soporte Dedicado \n" +
+                            "• Integraciones Futuras",
                     isSelected = selectedPlan == "Business",
                     selectedColor = Color(0xFFF9F9F0),
                     onSelect = { selectedPlan = "Business" }
@@ -212,13 +212,15 @@ fun PlanCard(
         ) {
             Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = colorPlan, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             Text(price, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.Black, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 description,
                 fontSize = 16.sp,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Left,
                 color = Color.Black,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
             )
+            Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = onSelect,
                 colors = ButtonDefaults.buttonColors(
