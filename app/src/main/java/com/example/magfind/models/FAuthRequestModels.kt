@@ -72,12 +72,12 @@ data class cCorreo(
     val fecha: String
 )
 
-// DTO para /cuenta
 data class CuentaResponse(
     val status: String,
     val data: CuentaData
 )
 
+// DTO para /cuenta
 data class CuentaData(
     val id_usuario: Int,
     val nombre: String,
