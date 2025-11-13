@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +29,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel) {
+
     val vm = remember { CategoriasViewModel() }
     val categorias by vm.categorias.collectAsState()
     val token = SessionManager.token ?: ""
@@ -40,11 +40,12 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
     var editingCategoria by remember { mutableStateOf<CategoriaDto?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
-    // Estados para confirmación de eliminación
+    // ❗ Dejamos la lógica de eliminación comentada para usarla después con swipe
+    /*
     var categoriaAEliminar by remember { mutableStateOf<CategoriaDto?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    */
 
-    // Cargar categorías solo si hay token válido
     LaunchedEffect(token) {
         if (token.isNotBlank()) {
             isLoading = true
@@ -68,29 +69,60 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
     ) { padding ->
 
         Scaffold(
+
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        editingCategoria = null
-                        showDialog = true
-                    },
-                    containerColor = Color(0xFF1976D2)
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Agregar categoría", tint = Color.White)
+
+                    //  FAB → AGREGAR
+                    FloatingActionButton(
+                        onClick = {
+                            editingCategoria = null     // modo agregar
+                            showDialog = true
+                        },
+                        containerColor = Color(0xFF1976D2)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Agregar categoría",
+                            tint = Color.White
+                        )
+                    }
+
+                    // FAB → EDITAR (abre dialog vacío y luego selecciona desde el dialog)
+                    FloatingActionButton(
+                        onClick = {
+                            editingCategoria = null     // Abrimos el dialog igual pero con intención de editar
+                            showDialog = true
+                        },
+                        containerColor = Color(0xFF0288D1)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar categoría",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
+
         ) { innerPadding ->
 
             Box(
-                modifier = Modifier
+                Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(padding)
                     .padding(16.dp)
             ) {
+
                 Column {
+
                     Text(
-                        text = "Categorías",
+                        "Categorías",
                         fontSize = 26.sp,
                         color = Color(0xFF1976D2),
                         fontWeight = FontWeight.Bold,
@@ -99,12 +131,14 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
 
                     when {
                         isLoading -> {
-                            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
                         }
 
                         categorias.isEmpty() -> {
                             Text(
-                                text = "No hay categorías disponibles.",
+                                "No hay categorías disponibles.",
                                 color = Color.Gray,
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
@@ -116,42 +150,24 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                                 contentPadding = PaddingValues(bottom = 90.dp)
                             ) {
                                 items(categorias) { cat ->
+
                                     Card(
                                         modifier = Modifier.fillMaxWidth(),
-                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                                        colors = CardDefaults.cardColors(Color(0xFFE3F2FD)),
                                         elevation = CardDefaults.cardElevation(4.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier
+                                        Column(
+                                            Modifier
                                                 .fillMaxWidth()
-                                                .padding(12.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
+                                                .padding(12.dp)
                                         ) {
-                                            Column {
-                                                Text(cat.nombre, fontWeight = FontWeight.Bold, color = Color.Black)
-                                                if (!cat.regla.isNullOrBlank())
-                                                    Text("Regla: ${cat.regla}", style = MaterialTheme.typography.bodySmall,
-                                                        color = Color.DarkGray)
-                                            }
-
-                                            Row {
-                                                // Botón editar
-                                                IconButton(onClick = {
-                                                    editingCategoria = cat
-                                                    showDialog = true
-                                                }) {
-                                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = Color(0xFF1976D2))
-                                                }
-
-                                                // Botón eliminar con confirmación
-                                                IconButton(onClick = {
-                                                    categoriaAEliminar = cat
-                                                    showDeleteDialog = true
-                                                }) {
-                                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
-                                                }
-                                            }
+                                            Text(cat.nombre, fontWeight = FontWeight.Bold)
+                                            if (!cat.regla.isNullOrBlank())
+                                                Text(
+                                                    "Regla: ${cat.regla}",
+                                                    color = Color.DarkGray,
+                                                    fontSize = 12.sp
+                                                )
                                         }
                                     }
                                 }
@@ -160,7 +176,106 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                     }
                 }
 
-                // Diálogo de confirmación de eliminación
+                // --------------------------------------------------------
+                // ✏ DIÁLOGO PARA AGREGAR / EDITAR
+                // --------------------------------------------------------
+                if (showDialog) {
+                    Dialog(onDismissRequest = { showDialog = false }) {
+
+                        Surface(
+                            shape = MaterialTheme.shapes.medium,
+                            tonalElevation = 8.dp
+                        ) {
+
+                            var nombre by remember { mutableStateOf(editingCategoria?.nombre ?: "") }
+                            var regla by remember { mutableStateOf(editingCategoria?.regla ?: "") }
+
+                            Column(
+                                Modifier
+                                    .padding(24.dp)
+                                    .fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+
+                                Text(
+                                    if (editingCategoria == null)
+                                        "Editar categoría"
+                                    else
+                                        "Editar categoría",
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+
+                                OutlinedTextField(
+                                    value = nombre,
+                                    onValueChange = { nombre = it },
+                                    label = { Text("Nombre") },
+                                    singleLine = true
+                                )
+
+                                OutlinedTextField(
+                                    value = regla,
+                                    onValueChange = { regla = it },
+                                    label = { Text("Regla") },
+                                    singleLine = true
+                                )
+
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    TextButton(onClick = { showDialog = false }) {
+                                        Text("Cancelar")
+                                    }
+
+                                    Button(onClick = {
+                                        if (nombre.isBlank()) {
+                                            Toast.makeText(
+                                                context,
+                                                "El nombre no puede estar vacío",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+                                        }
+
+                                        scope.launch {
+                                            try {
+                                                val repo = CategoriaRepository()
+
+                                                if (editingCategoria == null) {
+                                                    repo.agregarCategoria(token, nombre, regla)
+                                                    Toast.makeText(context, "Categoría creada", Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    repo.editarCategoria(
+                                                        token,
+                                                        editingCategoria!!.id_categoria,
+                                                        nombre,
+                                                        regla
+                                                    )
+                                                    Toast.makeText(context, "Categoría actualizada", Toast.LENGTH_SHORT).show()
+                                                }
+
+                                                vm.cargarCategorias(token)
+
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Error al guardar", Toast.LENGTH_SHORT).show()
+                                            }
+
+                                            showDialog = false
+                                        }
+
+                                    }) {
+                                        Text("Guardar")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // --------------------------------------------------------
+                // 🗑️ DIÁLOGO DE ELIMINAR (COMENTADO PARA USARLO CON SWIPE)
+                // --------------------------------------------------------
+                /*
                 if (showDeleteDialog && categoriaAEliminar != null) {
                     AlertDialog(
                         onDismissRequest = { showDeleteDialog = false },
@@ -188,85 +303,12 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                         },
                         title = { Text("Confirmar eliminación") },
                         text = {
-                            Text("¿Estás seguro de que deseas eliminar la categoría \"${categoriaAEliminar!!.nombre}\"?")
+                            Text("¿Eliminar \"${categoriaAEliminar!!.nombre}\"?")
                         }
                     )
                 }
+                */
 
-                // Diálogo agregar/editar
-                if (showDialog) {
-                    Dialog(onDismissRequest = { showDialog = false }) {
-                        Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 8.dp) {
-                            var nombre by remember { mutableStateOf(editingCategoria?.nombre ?: "") }
-                            var regla by remember { mutableStateOf(editingCategoria?.regla ?: "") }
-
-                            Column(
-                                Modifier
-                                    .padding(24.dp)
-                                    .fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Text(
-                                    if (editingCategoria == null) "Agregar categoría" else "Editar categoría",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-
-                                OutlinedTextField(
-                                    value = nombre,
-                                    onValueChange = { nombre = it },
-                                    label = { Text("Nombre de la categoría") },
-                                    singleLine = true
-                                )
-
-                                OutlinedTextField(
-                                    value = regla,
-                                    onValueChange = { regla = it },
-                                    label = { Text("Regla o palabra clave") },
-                                    singleLine = true
-                                )
-
-                                Row(
-                                    horizontalArrangement = Arrangement.End,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    TextButton(onClick = { showDialog = false }) {
-                                        Text("Cancelar")
-                                    }
-                                    Button(onClick = {
-                                        if (nombre.isBlank()) {
-                                            Toast.makeText(context, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
-                                            return@Button
-                                        }
-
-                                        scope.launch {
-                                            try {
-                                                val repo = CategoriaRepository()
-                                                if (editingCategoria == null) {
-                                                    repo.agregarCategoria(token, nombre, regla)
-                                                    Toast.makeText(context, "Categoría creada", Toast.LENGTH_SHORT).show()
-                                                } else {
-                                                    repo.editarCategoria(
-                                                        token,
-                                                        editingCategoria!!.id_categoria,
-                                                        nombre,
-                                                        regla
-                                                    )
-                                                    Toast.makeText(context, "Categoría actualizada", Toast.LENGTH_SHORT).show()
-                                                }
-                                                vm.cargarCategorias(token)
-                                            } catch (e: Exception) {
-                                                Toast.makeText(context, "Error al guardar", Toast.LENGTH_SHORT).show()
-                                            }
-                                            showDialog = false
-                                        }
-                                    }) {
-                                        Text(if (editingCategoria == null) "Guardar" else "Actualizar")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }
