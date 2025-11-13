@@ -91,6 +91,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                 }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = accentColor)) {
                     Text("Iniciar sesión", color = if (isDark) Color.Black else Color.White)
                 }
+                Spacer(modifier = Modifier.height(10.dp))
 
                 TextButton(onClick = { showRegisterDialog = true }, modifier = Modifier.fillMaxWidth()) {
                     Text("Registrarse", color = textColor)
