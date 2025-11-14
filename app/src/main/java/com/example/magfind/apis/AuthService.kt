@@ -1,17 +1,10 @@
 package com.example.magfind.apis
 
+import com.example.magfind.models.LoginRequest
+import com.example.magfind.models.LoginResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
-
-data class LoginRequest(
-    val username: String,
-    val password: String
-)
-
-data class LoginResponse(
-    val token: String
-)
 
 interface AuthService {
     @POST("login")

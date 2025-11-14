@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,15 +25,24 @@ import com.example.magfind.viewmodels.CuentaViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
+
     val cuentaVM: CuentaViewModel = viewModel()
+
     val cuenta = cuentaVM.cuenta.value
     val error = cuentaVM.error.value
     val loading = cuentaVM.loading.value
 
-    // Al cargar la vista, solicitar datos
+    // ****** FIX SESSION *******
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val token = sessionManager.getToken()
+    // **************************
+
+    // Solicitar datos al abrir
     LaunchedEffect(Unit) {
-        cuentaVM.cargarCuenta(SessionManager.token)
+        cuentaVM.cargarCuenta(token)
     }
+
 
     fPlantilla(
         title = "Mi Cuenta",

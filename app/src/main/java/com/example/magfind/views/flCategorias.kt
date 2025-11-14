@@ -32,13 +32,16 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
 
     val vm = remember { CategoriasViewModel() }
     val categorias by vm.categorias.collectAsState()
-    val token = SessionManager.token ?: ""
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }
     var editingCategoria by remember { mutableStateOf<CategoriaDto?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+
+    val sessionManager = SessionManager(context)
+    val token = sessionManager.getToken() ?: ""
+
 
     // Dejamos la lógica de eliminación comentada para usarla después con swipe
     /*

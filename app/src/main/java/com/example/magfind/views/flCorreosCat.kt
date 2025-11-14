@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,7 +51,9 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
 
     // Token actual del usuario logueado
     // (Asegúrate de que SessionManager.token se esté guardando como JWT)
-    val token = SessionManager.token ?: ""
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val token = sessionManager.getToken() ?: ""
 
     // Llamada a la API
     LaunchedEffect(Unit) {
