@@ -23,7 +23,8 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val token: String // El token JWT
+    val token: String, // El token JWT
+    val id_usuario: Int
 )
 
 data class EmailRequest(

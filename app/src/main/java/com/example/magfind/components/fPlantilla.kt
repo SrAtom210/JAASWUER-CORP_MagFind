@@ -13,6 +13,7 @@ import androidx.navigation.NavController
 import com.example.magfind.SessionManager
 import com.example.magfind.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,9 +26,8 @@ fun fPlantilla(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
     // 🎨 Colores dinámicos según el tema global
-    val isDark = themeViewModel.isDarkMode.value
+    val isDark = themeViewModel.isDarkMode.collectAsState().value
     val drawerBackground = if (isDark) Color(0xFF121212) else Color(0xFFF5F5F5)
     val textColor = if (isDark) Color.White else Color.Black
     val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
@@ -59,8 +59,9 @@ fun fPlantilla(
                     ) {
                         TextButton(
                             onClick = {
-                                SessionManager.token = null
-                                SessionManager.username = null
+                                val sessionManager = SessionManager(navController.context)
+                                sessionManager.clearSession()
+
                                 navController.navigate("Login") {
                                     popUpTo(0)
                                 }
@@ -72,6 +73,7 @@ fun fPlantilla(
                                 style = MaterialTheme.typography.titleLarge.copy(color = accentColor)
                             )
                         }
+
                     }
                 }
             }

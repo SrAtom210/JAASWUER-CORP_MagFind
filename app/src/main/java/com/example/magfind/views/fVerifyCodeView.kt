@@ -106,15 +106,21 @@ fun VerifyCodeView(
                                         navController.navigate("SubmitNewPassword/$email/$code")
                                     } else {
                                         // Flujo 2: Verificación de Registro
-                                        val token = repo.verifyCode(email, code)
-                                        if (token != null) {
-                                            SessionManager.token = token
-                                            SessionManager.username = email
+                                        val result = repo.verifyCode(email, code)
+                                        if (result != null) {
+
+                                            val sessionManager = SessionManager(context)
+                                            sessionManager.saveSession(
+                                                userId = result.id_usuario,
+                                                token = result.token
+                                            )
+
                                             Toast.makeText(context, "¡Verificación exitosa!", Toast.LENGTH_SHORT).show()
                                             navController.navigate("Home") { popUpTo(0) }
                                         } else {
                                             Toast.makeText(context, "Código incorrecto.", Toast.LENGTH_SHORT).show()
                                         }
+
                                     }
                                 } catch (e: Exception) {
                                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

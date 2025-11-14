@@ -307,17 +307,36 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                             onClick = {
                                 scope.launch {
                                     try {
-                                        val token = repo.login(username, password)
-                                        if (token != null) {
-                                            SessionManager.token = token
-                                            SessionManager.username = username
+                                        val response = repo.login(username, password)
+
+                                        if (response != null) {
+
+                                            val sessionManager = SessionManager(context)
+                                            sessionManager.saveSession(
+                                                userId = response.id_usuario,
+                                                token = response.token
+                                            )
+
                                             Toast.makeText(context, "Bienvenido, $username", Toast.LENGTH_SHORT).show()
-                                            navController.navigate("Home") { popUpTo(0) }
+
+                                            navController.navigate("Home") {
+                                                popUpTo(0)
+                                            }
+
                                         } else {
-                                            Toast.makeText(context, "Credenciales incorrectas.", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                "Credenciales incorrectas.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
+
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Error: ${e.message}",
+                                            Toast.LENGTH_LONG
+                                        ).show()
                                     }
                                 }
                             },
@@ -326,6 +345,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                         ) {
                             Text("Iniciar sesión", color = Color.White)
                         }
+
                     }
                 } else {
                     // --- REGISTRO ---
