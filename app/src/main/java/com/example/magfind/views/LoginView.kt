@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 import com.example.magfind.apis.AuthRepository
 import com.example.magfind.SessionManager
+import com.example.magfind.components.fResetPasswordDialog
 
 /*@Composable
 fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) {
@@ -187,12 +188,17 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
     }
 }*/
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showForgotDialog by remember { mutableStateOf(false) }
     var showRegisterDialog by remember { mutableStateOf(false) }
+
+    // --- ¡NUEVO ESTADO PARA EL DIÁLOGO DE RECUPERAR! ---
+    // Lo movemos aquí arriba para que el diálogo pueda usarlo
+    var forgotLoading by remember { mutableStateOf(false) }
 
     // Modo oscuro
     val isDark = themeViewModel.isDarkMode.collectAsState().value
@@ -209,245 +215,229 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
     val repo = remember { AuthRepository() }
 
     Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
-        // Centramos todo verticalmente
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 40.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(R.drawable.magfind),
-                contentDescription = "logo",
-                modifier = Modifier.size(120.dp)
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = "MagFind",
-                fontSize = 40.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = accentColor
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Pestañas
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.Transparent,
-                contentColor = accentColor,
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
-                        Modifier
-                            .tabIndicatorOffset(tabPositions[selectedTab])
-                            .fillMaxWidth(tabs.size.toFloat() / tabs.size) // se extiende todo
-                            .height(3.dp),
-                        color = accentColor
-                    )
-                }
+        // Usamos un Box para que el Diálogo se superponga
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 40.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = {
-                            Text(
-                                text = title,
-                                color = if (selectedTab == index) accentColor else textColor,
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    )
-                }
-            }
+                Image(
+                    painter = painterResource(R.drawable.magfind),
+                    contentDescription = "logo",
+                    modifier = Modifier.size(120.dp)
+                )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-            // Animación de swipe entre Login / Registro
-            AnimatedContent(targetState = selectedTab, label = "") { target ->
-                if (target == 0) {
-                    // --- LOGIN ---
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextField(
-                            value = username,
-                            onValueChange = { username = it },
-                            label = { Text("Email", color = textColor) },
-                            textStyle = LocalTextStyle.current.copy(color = textColor),
-                            modifier = Modifier.fillMaxWidth()
+                Text(
+                    text = "MagFind",
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = accentColor
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Pestañas
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = Color.Transparent,
+                    contentColor = accentColor,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.Indicator(
+                            Modifier
+                                .tabIndicatorOffset(tabPositions[selectedTab])
+                                //.fillMaxWidth(tabs.size.toFloat() / tabs.size) // Esto puede ser solo Modifier.fillMaxWidth()
+                                .height(3.dp),
+                            color = accentColor
                         )
-                        OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = { Text("Contraseña", color = textColor) },
-                            textStyle = LocalTextStyle.current.copy(color = textColor),
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                        )
-
-                        TextButton(
-                            onClick = { showForgotDialog = true },
-                            modifier = Modifier.align(Alignment.End)
-                        ) {
-                            Text(
-                                "Olvidé mi contraseña",
-                                color = accentColor,
-                                textAlign = TextAlign.Right
-                            )
-                        }
-
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    try {
-                                        val token = repo.login(username, password)
-                                        if (token != null) {
-                                            SessionManager.token = token
-                                            SessionManager.username = username
-                                            Toast.makeText(context, "Bienvenido, $username", Toast.LENGTH_SHORT).show()
-                                            navController.navigate("Home") { popUpTo(0) }
-                                        } else {
-                                            Toast.makeText(context, "Credenciales incorrectas.", Toast.LENGTH_SHORT).show()
-                                        }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = accentColor)
-                        ) {
-                            Text("Iniciar sesión", color = Color.White)
-                        }
                     }
-                } else {
-                    // --- REGISTRO ---
-                    var regEmail by remember { mutableStateOf("") }
-                    var regPassword by remember { mutableStateOf("") }
-                    var regLoading by remember { mutableStateOf(false) }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextField(
-                            value = regEmail,
-                            onValueChange = { regEmail = it },
-                            label = { Text("Correo electrónico", color = textColor) },
-                            textStyle = LocalTextStyle.current.copy(color = textColor),
-                            modifier = Modifier.fillMaxWidth()
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = {
+                                Text(
+                                    text = title,
+                                    color = if (selectedTab == index) accentColor else textColor,
+                                    fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
                         )
-                        OutlinedTextField(
-                            value = regPassword,
-                            onValueChange = { regPassword = it },
-                            label = { Text("Contraseña", color = textColor) },
-                            textStyle = LocalTextStyle.current.copy(color = textColor),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    }
+                }
 
-                        Button(
-                            onClick = {
-                                if (regEmail.isBlank() || regPassword.isBlank()) {
-                                    Toast.makeText(context, "Campos requeridos.", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    regLoading = true
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Animación de swipe entre Login / Registro
+                AnimatedContent(targetState = selectedTab, label = "") { target ->
+                    if (target == 0) {
+                        // --- LOGIN ---
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = username,
+                                onValueChange = { username = it },
+                                label = { Text("Email", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                label = { Text("Contraseña", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                            )
+
+                            TextButton(
+                                onClick = { showForgotDialog = true },
+                                modifier = Modifier.align(Alignment.End)
+                            ) {
+                                Text(
+                                    "Olvidé mi contraseña",
+                                    color = accentColor,
+                                    textAlign = TextAlign.Right
+                                )
+                            }
+
+                            Button(
+                                onClick = {
                                     scope.launch {
                                         try {
-                                            val nombreUsuario = regEmail.substringBefore('@').trim().lowercase()
-                                            val success = repo.register(nombreUsuario, regEmail, regPassword)
-                                            if (success) {
-                                                Toast.makeText(context, "Registro exitoso. Verifica tu correo.", Toast.LENGTH_LONG).show()
-                                                navController.navigate("VerifyCode/$regEmail")
+                                            val token = repo.login(username, password)
+                                            if (token != null) {
+                                                SessionManager.token = token
+                                                SessionManager.username = username
+                                                Toast.makeText(context, "Bienvenido, $username", Toast.LENGTH_SHORT).show()
+                                                navController.navigate("Home") { popUpTo(0) }
                                             } else {
-                                                Toast.makeText(context, "Error: El email ya existe o falló la conexión.", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(context, "Credenciales incorrectas.", Toast.LENGTH_SHORT).show()
                                             }
                                         } catch (e: Exception) {
                                             Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                                        } finally {
-                                            regLoading = false
                                         }
                                     }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                            ) {
+                                Text("Iniciar sesión", color = if (isDark) Color.Black else Color.White)
+                            }
+                        }
+                    } else {
+                        // --- REGISTRO ---
+                        var regEmail by remember { mutableStateOf("") }
+                        var regPassword by remember { mutableStateOf("") }
+                        var regLoading by remember { mutableStateOf(false) }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            if (regLoading) {
-                                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-                            } else {
-                                Text("Registrarse", color = Color.White)
+                            OutlinedTextField(
+                                value = regEmail,
+                                onValueChange = { regEmail = it },
+                                label = { Text("Correo electrónico", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = regPassword,
+                                onValueChange = { regPassword = it },
+                                label = { Text("Contraseña", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Button(
+                                onClick = {
+                                    if (regEmail.isBlank() || regPassword.isBlank()) {
+                                        Toast.makeText(context, "Campos requeridos.", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        regLoading = true
+                                        scope.launch {
+                                            try {
+                                                val nombreUsuario = regEmail.substringBefore('@').trim().lowercase() + System.currentTimeMillis().toString().takeLast(4)
+                                                val success = repo.register(nombreUsuario, regEmail, regPassword)
+                                                if (success) {
+                                                    Toast.makeText(context, "Registro exitoso. Verifica tu correo.", Toast.LENGTH_LONG).show()
+                                                    navController.navigate("VerifyCode/$regEmail")
+                                                } else {
+                                                    Toast.makeText(context, "Error: El email ya existe o falló la conexión.", Toast.LENGTH_LONG).show()
+                                                }
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                            } finally {
+                                                regLoading = false
+                                            }
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                            ) {
+                                if (regLoading) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = if (isDark) Color.Black else Color.White, strokeWidth = 2.dp)
+                                } else {
+                                    Text("Registrarse", color = if (isDark) Color.Black else Color.White)
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (showForgotDialog) {
-                var forgotEmail by remember { mutableStateOf("") }
-                var forgotLoading by remember { mutableStateOf(false) }
+            } // Fin de la Columna principal
 
-                AlertDialog(
-                    onDismissRequest = { showForgotDialog = false },
-                    title = { Text(text = "Recuperar Contraseña") },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
-                                value = forgotEmail,
-                                onValueChange = { forgotEmail = it },
-                                label = { Text("Correo Electrónico") }
-                            )
-                            if (forgotLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
-                            }
-                        }
+            // --- ¡NUEVO DIÁLOGO PERSONALIZADO PARA "OLVIDÉ CONTRASEÑA"! ---
+            // Se coloca fuera de la Columna principal para que se superponga
+            if (showForgotDialog) {
+                fResetPasswordDialog(
+                    themeViewModel = themeViewModel,
+                    isLoading = forgotLoading,
+                    onDismissRequest = {
+                        showForgotDialog = false
                     },
-                    confirmButton = {
-                        Button(onClick = {
-                            if (forgotEmail.isBlank()) {
-                                Toast.makeText(context, "El correo es requerido.", Toast.LENGTH_SHORT).show()
-                            } else {
-                                forgotLoading = true
-                                scope.launch {
-                                    try {
-                                        val emailSent = repo.requestPasswordReset(forgotEmail)
-                                        if (emailSent) {
-                                            Toast.makeText(context, "Correo enviado.", Toast.LENGTH_SHORT).show()
-                                            showForgotDialog = false
-                                            navController.navigate("VerifyCode/$forgotEmail?isReset=true")
-                                        } else {
-                                            Toast.makeText(context, "Error: Correo no encontrado.", Toast.LENGTH_LONG).show()
-                                        }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                                    } finally {
-                                        forgotLoading = false
+                    onSendClick = { email ->
+                        // El email viene del diálogo
+                        if (email.isBlank()) {
+                            Toast.makeText(context, "El correo es requerido.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            forgotLoading = true // <-- Muestra el indicador de carga
+                            scope.launch {
+                                try {
+                                    val emailSent = repo.requestPasswordReset(email)
+                                    if (emailSent) {
+                                        Toast.makeText(context, "Correo enviado.", Toast.LENGTH_SHORT).show()
+                                        showForgotDialog = false
+                                        navController.navigate("VerifyCode/$email?isReset=true")
+                                    } else {
+                                        Toast.makeText(context, "Error: Correo no encontrado.", Toast.LENGTH_LONG).show()
                                     }
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                } finally {
+                                    forgotLoading = false // <-- Oculta el indicador de carga
                                 }
                             }
-                        }) {
-                            Text("Enviar")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showForgotDialog = false }) {
-                            Text("Cancelar")
                         }
                     }
                 )
             }
-        }
-    }
+            // --- FIN DEL NUEVO DIÁLOGO ---
+
+        } // Fin del Box
+    } // Fin de la Surface
 }
 
 //Comentario unicamente para hacer comit and push :)
