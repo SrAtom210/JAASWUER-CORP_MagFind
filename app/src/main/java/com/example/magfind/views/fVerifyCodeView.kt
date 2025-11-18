@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.example.magfind.SessionManager
 import com.example.magfind.apis.AuthRepository
 import com.example.magfind.ui.theme.ThemeViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -40,6 +41,28 @@ fun VerifyCodeView(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val repo = remember { AuthRepository() }
+
+    // --- NUEVA LÓGICA DE COOLDOWN ---
+    val totalCooldownSeconds = 60
+    var isTimerRunning by remember { mutableStateOf(false) }
+    var countdown by remember { mutableStateOf(totalCooldownSeconds) }
+
+    // Este "LaunchedEffect" es el motor del temporizador.
+    // Se dispara CADA VEZ que 'isTimerRunning' cambia a 'true'.
+    LaunchedEffect(key1 = isTimerRunning) {
+        if (isTimerRunning) {
+            // Mientras el contador sea mayor que 0...
+            while (countdown > 0) {
+                delay(1000L) // ...espera 1 segundo
+                countdown--  // ...resta 1 al contador
+            }
+            // Cuando el bucle termina, reseteamos todo
+            isTimerRunning = false
+            countdown = totalCooldownSeconds
+        }
+    }
+    // --- FIN DE LÓGICA DE COOLDOWN ---
+
 
     // Colores dinámicos
     val isDark = themeViewModel.isDarkMode.collectAsState().value
@@ -103,18 +126,25 @@ fun VerifyCodeView(
                                         // Flujo 1: Reseteo de Contraseña
                                         // Navegamos a la siguiente pantalla
                                         isLoading = false
+                                        // El código se valida en la siguiente pantalla
                                         navController.navigate("SubmitNewPassword/$email/$code")
                                     } else {
                                         // Flujo 2: Verificación de Registro
-                                        val token = repo.verifyCode(email, code)
-                                        if (token != null) {
-                                            SessionManager.token = token
-                                            SessionManager.username = email
+                                        val result = repo.verifyCode(email, code)
+                                        if (result != null) {
+
+                                            val sessionManager = SessionManager(context)
+                                            sessionManager.saveSession(
+                                                userId = result.id_usuario,
+                                                token = result.token
+                                            )
+
                                             Toast.makeText(context, "¡Verificación exitosa!", Toast.LENGTH_SHORT).show()
                                             navController.navigate("Home") { popUpTo(0) }
                                         } else {
                                             Toast.makeText(context, "Código incorrecto.", Toast.LENGTH_SHORT).show()
                                         }
+
                                     }
                                 } catch (e: Exception) {
                                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -137,23 +167,46 @@ fun VerifyCodeView(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = {
-                scope.launch {
-                    val success = if (isReset) {
-                        repo.requestPasswordReset(email)
-                    } else {
-                        repo.requestVerificationCode(email)
-                    }
 
-                    if (success) {
-                        Toast.makeText(context, "Nuevo código enviado.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "Error al reenviar el código.", Toast.LENGTH_SHORT).show()
+            // --- BOTÓN DE REENVIAR MODIFICADO ---
+            TextButton(
+                // 1. El botón se deshabilita si el temporizador está corriendo
+                enabled = !isTimerRunning,
+                onClick = {
+                    // 2. Iniciamos el temporizador
+                    isTimerRunning = true
+
+                    // 3. Ejecutamos la lógica de red
+                    scope.launch {
+                        val success = if (isReset) {
+                            repo.requestPasswordReset(email)
+                        } else {
+                            repo.requestVerificationCode(email)
+                        }
+
+                        if (success) {
+                            Toast.makeText(context, "Nuevo código enviado.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Error al reenviar el código.", Toast.LENGTH_SHORT).show()
+                            // Si falla la API, reseteamos el timer para que pueda reintentar
+                            isTimerRunning = false
+                            countdown = totalCooldownSeconds
+                        }
                     }
                 }
-            }) {
-                Text("Reenviar código", color = accentColor)
+            ) {
+                // 4. El texto cambia según el estado del temporizador
+                Text(
+                    text = if (isTimerRunning) {
+                        "Reenviar en ${countdown}s"
+                    } else {
+                        "Reenviar código"
+                    },
+                    // El color se atenuará automáticamente por el 'enabled = false'
+                    color = accentColor
+                )
             }
+            // --- FIN DEL BOTÓN MODIFICADO ---
         }
     }
 }

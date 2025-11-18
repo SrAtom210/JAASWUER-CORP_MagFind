@@ -1,6 +1,8 @@
 package com.example.magfind.models
 
 // ¡Asegúrate de que TODOS estos imports estén aquí!
+import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -21,13 +23,14 @@ interface ApiService {
     suspend fun register(@Body request: RegisterRequest): GenericResponse
 
     @POST("login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
 
     @POST("request-verification")
     suspend fun requestVerification(@Body request: EmailRequest): GenericResponse
 
     @POST("verify-code")
-    suspend fun verifyCode(@Body request: VerifyCodeRequest): LoginResponse
+    suspend fun verifyCode(@Body request: VerifyCodeRequest): Response<LoginResponse>
 
     @POST("request-password-reset")
     suspend fun requestPasswordReset(@Body request: EmailRequest): GenericResponse

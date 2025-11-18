@@ -23,16 +23,21 @@ class AuthRepository {
     }
 
     // --- LOGIN ---
-    suspend fun login(username: String, password: String): String? {
+    suspend fun login(username: String, password: String): LoginResponse? {
         return try {
-            val request = LoginRequest(username, password)
-            val response = api.login(request)
-            response.token
+            val api = RetrofitClient.instance
+            val response = api.login(LoginRequest(username, password))
+
+            if (response.isSuccessful)
+                response.body()
+            else
+                null
+
         } catch (e: Exception) {
-            Log.e("LOGIN_EXCEPTION", "Error: ${e.message}")
             null
         }
     }
+
 
     // --- VERIFICACIÓN DE EMAIL ---
     suspend fun checkEmailDuplicate(email: String): Boolean {
@@ -56,11 +61,16 @@ class AuthRepository {
         }
     }
 
-    suspend fun verifyCode(email: String, code: String): String? {
+    suspend fun verifyCode(email: String, code: String): LoginResponse? {
         return try {
-            val request = VerifyCodeRequest(email, code)
-            val response = api.verifyCode(request)
-            response.token
+            val api = RetrofitClient.instance
+            val response = api.verifyCode(VerifyCodeRequest(email, code))
+
+            if (response.isSuccessful)
+                response.body()
+            else
+                null
+
         } catch (e: Exception) {
             null
         }

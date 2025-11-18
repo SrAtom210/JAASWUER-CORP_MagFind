@@ -1,3 +1,4 @@
+import com.example.magfind.models.ApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -16,15 +17,6 @@ data class CategoriaResponse(
     val items: List<Categoria>
 )
 
-// API Service
-interface ApiService {
-
-    @POST("categorias/")
-    suspend fun addCategoria(@Body categoria: Categoria): Response<Categoria>
-
-    @GET("categorias/")
-    suspend fun getCategorias(): Response<CategoriaResponse>
-}
 
 // Retrofit Client
 object RetrofitClient {
