@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
 }
+
 android {
     namespace = "com.example.magfind1"
     compileSdk = 36
@@ -33,7 +34,21 @@ android {
 
 dependencies {
 
-    // Jetpack Compose
+    // --- DEPENDENCIAS DE MASTER + TU RAMA ---
+
+    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.animation:animation")
+    implementation("androidx.compose.ui:ui")
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+
+    // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -43,7 +58,7 @@ dependencies {
     // Navigation
     implementation(libs.androidx.navigation.compose)
 
-    // Datastore
+    // Datastore (repetido, pero lo dejamos una sola vez arriba)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // Core
@@ -70,18 +85,17 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-
-    // Google Auth
+    // Google Auth (Credentials API)
     implementation(libs.credentials)
     implementation(libs.credentials.play.services)
     implementation(libs.google.identity)
 
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-analytics")
-
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
 
     // Google ID
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
@@ -89,14 +103,10 @@ dependencies {
     // Play Services Auth
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
-    //Swipe
+    // Swipe + Compose Extras
     implementation("androidx.compose.material:material")
-
     implementation("androidx.compose.foundation:foundation")
-
     implementation("androidx.compose.animation:animation")
-
     implementation("androidx.compose.ui:ui")
-
 
 }
