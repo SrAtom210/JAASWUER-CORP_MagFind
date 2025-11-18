@@ -16,3 +16,4 @@ interface FCuentaApi {
     @GET("verificar_email")
     suspend fun verificarEmail(@Query("email") email: String): CuentaResponse
 }
+

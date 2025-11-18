@@ -39,6 +39,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
     val repo = remember { AuthRepository() }
     val session = remember { SessionManager(context) }
 
+
     val GOOGLE_CLIENT_ID =
         "76794028126-h85vt3eva11286jjob5leq038mr61q6c.apps.googleusercontent.com"
 

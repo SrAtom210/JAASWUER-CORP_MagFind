@@ -116,6 +116,7 @@ fun SubmitNewPasswordView(
                             }
                         }
                     },
+
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = accentColor)
                 ) {

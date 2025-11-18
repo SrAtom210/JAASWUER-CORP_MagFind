@@ -12,7 +12,6 @@ class ClasificadorIA {
 
     private val API_URL = "http://158.101.114.30:8000/classify"
 
-
     /**
      * Clasifica un correo usando la API
      */

@@ -59,5 +59,4 @@ class SessionManager(context: Context) {
         return prefs.getBoolean("auto_sync", true)
     }
 
-
 }

@@ -9,7 +9,6 @@ import com.example.magfind1.models.CuentaData
 import kotlinx.coroutines.launch
 
 class CuentaViewModel : ViewModel() {
-
     private val repo = CuentaRepository()
 
     // Estados observables

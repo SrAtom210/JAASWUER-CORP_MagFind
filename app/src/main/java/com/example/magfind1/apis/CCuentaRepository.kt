@@ -7,7 +7,6 @@ import com.example.magfind1.models.CuentaData
 class CuentaRepository {
 
     private val api = RetrofitClient.instance
-
     suspend fun getCuenta(token: String): CuentaData? {
         return try {
             val response = api.obtenerCuenta(token)

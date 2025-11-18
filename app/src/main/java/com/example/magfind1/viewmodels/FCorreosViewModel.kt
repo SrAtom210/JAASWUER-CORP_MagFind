@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CorreosViewModel : ViewModel() {
-
     private val repo = CorreosRepository()
 
     private val _correos = MutableStateFlow<CategoriasResponse>(emptyMap())

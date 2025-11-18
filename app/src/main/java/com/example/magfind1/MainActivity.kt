@@ -10,8 +10,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.example.magfind1.google.GmailAuthCallback
-import com.example.magfind1.google.GmailAuthManager
 import com.example.magfind1.pnavigation.NavManager
 import com.example.magfind1.ui.theme.MagFindTheme
 import com.example.magfind1.ui.theme.ThemeRepository
@@ -23,17 +21,6 @@ class MainActivity : ComponentActivity() {
         viewModelFactory {
             initializer {
                 ThemeViewModel(ThemeRepository(applicationContext))
-            }
-        }
-    }
-
-    // Manejo del resultado de login con Gmail (para sincronización)
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        GmailAuthManager.handleActivityResult(requestCode, data) { authCode ->
-            if (authCode != null) {
-                GmailAuthCallback.onCodeReceived?.invoke(authCode)
             }
         }
     }

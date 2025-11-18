@@ -31,7 +31,6 @@ class CategoriaRepository {
             Log.e("CategoriaRepo", "Error al agregar: ${e.message}")
         }
     }
-
     suspend fun editarCategoria(token: String, id: Int, nombre: String, regla: String?) {
         try {
             val body = CategoriaPersonalizadaIn(nombre, regla)

@@ -36,7 +36,6 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val token = sessionManager.getToken()
-    // **************************
 
     // Solicitar datos al abrir
     LaunchedEffect(Unit) {

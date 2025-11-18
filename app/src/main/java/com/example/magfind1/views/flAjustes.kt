@@ -21,8 +21,6 @@ import androidx.navigation.NavController
 import com.example.magfind1.RetrofitClient
 import com.example.magfind1.SessionManager
 import com.example.magfind1.components.fPlantilla
-import com.example.magfind1.google.GmailAuthCallback
-import com.example.magfind1.google.GmailAuthManager
 import com.example.magfind1.ui.theme.ThemeViewModel
 import com.example.magfind1.viewmodels.GmailViewModel
 import kotlinx.coroutines.launch
@@ -196,7 +194,6 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                     } else {
 
-                        // ✅ YA conectado
                         Column(modifier = Modifier.padding(20.dp)) {
                             Text(
                                 text = "Conectado como:",

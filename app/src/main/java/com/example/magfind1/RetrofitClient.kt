@@ -35,7 +35,6 @@ object RetrofitClient {
         return retrofit.create(DynamicApi::class.java)
     }
 }
-
 interface DynamicApi {
     @POST
     suspend fun post(@Url url: String, @Body body: HashMap<String, Any>): Response<Unit>

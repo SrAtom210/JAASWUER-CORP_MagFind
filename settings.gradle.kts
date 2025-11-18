@@ -23,3 +23,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MagFind"
 include(":app")
+

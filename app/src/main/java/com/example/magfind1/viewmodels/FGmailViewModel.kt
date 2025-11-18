@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class GmailViewModel : ViewModel() {
-
     private val repo = GmailRepository()
 
     val connected = MutableStateFlow(false)

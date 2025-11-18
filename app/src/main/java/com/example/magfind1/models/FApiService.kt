@@ -72,7 +72,6 @@ interface ApiService {
     ): GenericResponse
 
     // --- CORREOS CLASIFICADOS ---
-
     @GET("correos/{token}")
     suspend fun obtenerCorreos(@Path("token") token: String): CategoriasResponse
 

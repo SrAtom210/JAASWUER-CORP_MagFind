@@ -5,7 +5,6 @@ import com.example.magfind1.RetrofitClient
 import com.example.magfind1.models.DCGmailConnectRequest
 
 class GmailRepository {
-
     private val api = RetrofitClient.instance
 
     suspend fun getStatus(token: String): Map<String, Any> {

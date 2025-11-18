@@ -7,6 +7,7 @@ class CorreosRepository {
 
     private val api = RetrofitClient.instance
 
+
     suspend fun listarCorreos(token: String): CategoriasResponse {
         return api.obtenerCorreos(token)
     }

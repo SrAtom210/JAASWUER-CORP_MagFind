@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
 }
-
 android {
     namespace = "com.example.magfind1"
     compileSdk = 36
@@ -87,6 +86,18 @@ dependencies {
     // Google ID
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
-    // Play Services Auth (if not already added)
+    // Play Services Auth
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    //Swipe
+    implementation("androidx.compose.material:material")
+
+    implementation("androidx.compose.foundation:foundation")
+
+    implementation("androidx.compose.animation:animation")
+
+    implementation("androidx.compose.ui:ui")
+
+
+
 }

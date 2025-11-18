@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class CategoriasViewModel : ViewModel() {
-
     private val _categorias = MutableStateFlow<List<CategoriaDto>>(emptyList())
     val categorias: StateFlow<List<CategoriaDto>> = _categorias
 

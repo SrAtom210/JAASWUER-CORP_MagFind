@@ -41,7 +41,6 @@ data class PasswordResetRequest(
     val code: String,
     val new_password: String
 )
-
 // Login con Google
 data class GoogleLoginRequest(
     val token: String

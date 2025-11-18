@@ -8,7 +8,6 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption // ✅ C
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import java.util.UUID
 
-
 object GoogleAuthManager {
 
     private const val CLIENT_ID =

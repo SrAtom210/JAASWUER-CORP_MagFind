@@ -51,7 +51,6 @@ fun fPlantilla(
                             scope.launch { drawerState.close() }
                         }
                     }
-
                     Spacer(modifier = Modifier.height(16.dp))
                     Column(
                         modifier = Modifier.fillMaxSize(),

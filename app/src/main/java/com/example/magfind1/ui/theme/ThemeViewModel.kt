@@ -7,8 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ThemeViewModel(private val repository: ThemeRepository) : ViewModel() {
-
-    private val _isDarkMode = MutableStateFlow(false)
+    val _isDarkMode = MutableStateFlow(false)
     val isDarkMode = _isDarkMode.asStateFlow()
 
     init {

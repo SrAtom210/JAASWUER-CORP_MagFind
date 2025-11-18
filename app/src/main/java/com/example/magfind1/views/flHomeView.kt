@@ -22,6 +22,7 @@ fun flHomeView(navController: NavController,themeViewModel: ThemeViewModel){
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+
     fPlantilla(
         title = "Home",
         navController,themeViewModel = themeViewModel,

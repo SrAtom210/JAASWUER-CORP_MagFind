@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel) {
-
     val vm = remember { CategoriasViewModel() }
     val categorias by vm.categorias.collectAsState()
     val context = LocalContext.current
