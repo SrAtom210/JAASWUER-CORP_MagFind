@@ -77,6 +77,7 @@ class AuthRepository {
             false
         }
     }
+
     suspend fun submitPasswordReset(email: String, code: String, newPassword: String): Boolean {
         return try {
             val request = PasswordResetRequest(email, code, newPassword)

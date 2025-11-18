@@ -1,5 +1,4 @@
 package com.example.magfind1.apis
-
 import android.util.Log
 import com.example.magfind1.RetrofitClient
 import com.example.magfind1.models.DCGmailConnectRequest

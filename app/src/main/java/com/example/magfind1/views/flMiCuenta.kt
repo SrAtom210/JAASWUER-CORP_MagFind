@@ -42,7 +42,6 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
         cuentaVM.cargarCuenta(token)
     }
 
-
     fPlantilla(
         title = "Mi Cuenta",
         navController,

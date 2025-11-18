@@ -88,5 +88,4 @@ interface ApiService {
 
     @POST("gmail/disconnect")
     suspend fun disconnectGmail(@Header("Authorization") token: String): Map<String, Any>
-
 }

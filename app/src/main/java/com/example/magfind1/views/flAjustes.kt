@@ -273,6 +273,7 @@ fun fSettingAction(title: String, accentColor: Color, onClick: () -> Unit) {
             .padding(vertical = 8.dp)
     )
 }
+
 fun openGoogleOAuth(context: Context, token: String) {
     val encodedState = URLEncoder.encode(token, "UTF-8")
 

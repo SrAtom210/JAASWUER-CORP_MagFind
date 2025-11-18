@@ -34,7 +34,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val isDarkMode by themeViewModel.isDarkMode.collectAsState()
-
             MagFindTheme(darkTheme = isDarkMode) {
                 NavManager(themeViewModel)
             }

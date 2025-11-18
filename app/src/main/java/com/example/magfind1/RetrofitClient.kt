@@ -21,7 +21,6 @@ object RetrofitClient {
 
         retrofit.create(ApiService::class.java)
     }
-
     // Retrofit crudo por si necesitas clientes dinámicos
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()

@@ -24,6 +24,5 @@ class ThemeRepository(private val context: Context) {
             prefs[DARK_MODE_KEY] = enabled
         }
     }
-
 }
 

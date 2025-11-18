@@ -1,6 +1,5 @@
 package com.example.magfind1.apis
 
-
 import com.example.magfind1.models.CuentaResponse
 import retrofit2.http.GET
 import retrofit2.http.Path

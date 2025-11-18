@@ -49,7 +49,6 @@ fun fSuscripcionView(navController: NavController,themeViewModel: ThemeViewModel
     val scope = rememberCoroutineScope()
     var selectedPlan by remember { mutableStateOf("Essential") }
 
-
     fPlantilla(
         title = "Suscripción",
         navController,themeViewModel = themeViewModel,

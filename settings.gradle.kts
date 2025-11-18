@@ -20,7 +20,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-
 rootProject.name = "MagFind"
 include(":app")
 

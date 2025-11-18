@@ -45,7 +45,6 @@ data class PasswordResetRequest(
 data class GoogleLoginRequest(
     val token: String
 )
-
 // --- DTOs para Datos de la App ---
 
 data class CategoriaListResponse(
