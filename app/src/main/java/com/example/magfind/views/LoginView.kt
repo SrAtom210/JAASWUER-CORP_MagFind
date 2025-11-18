@@ -188,6 +188,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
     }
 }*/
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) {
@@ -317,7 +318,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                             val token = repo.login(username, password)
                                             if (token != null) {
                                                 SessionManager.token = token
-                                                SessionManager.username = username
+                                                SessionManager.userId = username
                                                 Toast.makeText(context, "Bienvenido, $username", Toast.LENGTH_SHORT).show()
                                                 navController.navigate("Home") { popUpTo(0) }
                                             } else {
