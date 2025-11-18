@@ -53,6 +53,15 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+    implementation("androidx.compose.material:material")
+
+    implementation("androidx.compose.foundation:foundation")
+
+    implementation("androidx.compose.animation:animation")
+
+    implementation("androidx.compose.ui:ui")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
