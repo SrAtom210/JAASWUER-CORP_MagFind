@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "76794028126",
+    "project_id": "magfind-478123",
+    "storage_bucket": "magfind-478123.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:76794028126:android:014b8ce5d53c53825d54cf",
+        "android_client_info": {
+          "package_name": "com.example.magfind1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "76794028126-b96vmt0ltkss145old4rbbk9si2hh327.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.magfind1",
+            "certificate_hash": "71fb0cf2761291d437bcff5ed893708cd0145e2c"
+          }
+        },
+        {
+          "client_id": "76794028126-nm63voptik0q42nqj6dqhk43b3kn20lr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBn8s4D6DDG0kBNzjEPlP-gDy9y0PxdmOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "76794028126-h85vt3eva11286jjob5leq038mr61q6c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
