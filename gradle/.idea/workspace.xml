@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="64f2c3e7-1c6f-45fe-bfe4-31bae7cd323a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/apis/FLCategoriaRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/Categoria.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/Categoria.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/apis/CCuentaRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/apis/CCuentaRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/apis/FCategoriasApi.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/apis/FCuentaApi.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/apis/FCuentaApi.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/fSessionManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/fSessionManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/models/CCuentaResponse.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/models/CCuentaResponse.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/viewmodels/FCuentaViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/viewmodels/FCuentaViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/LoginView.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/LoginView.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/flCategorias.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/flCategorias.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/flMiCuenta.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/flMiCuenta.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/flRegistro.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/com/example/magfind/views/flRegistro.kt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="351kZDoCZ52JRzdHrkH56vpwlTd" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "sprint",
+    "last_opened_file_path": "C:/Users/emman/Documents/TECLAGUNA/SEPTIMO SEM/ANDROID/TEMA 1/magfind_proyecto/gradle"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="64f2c3e7-1c6f-45fe-bfe4-31bae7cd323a" name="Changes" comment="" />
+      <created>1762285018235</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1762285018235</updated>
+    </task>
+    <servers />
+  </component>
+</project>
