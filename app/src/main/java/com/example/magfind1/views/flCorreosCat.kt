@@ -22,11 +22,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-// --- CAMBIOS DE IMPORTS ---
-import com.example.magfind1.RetrofitClient // <-- Bien
-import com.example.magfind1.SessionManager // <-- Bien
-// import com.example.magfind.apis.FCorreosApi // <--- BORRADO (Ya no se usa)
-// -------------------------
+import com.example.magfind1.RetrofitClient
+import com.example.magfind1.SessionManager
 import com.example.magfind1.components.fPlantilla
 import com.example.magfind1.models.cCorreo
 import com.example.magfind1.models.CategoriasResponse

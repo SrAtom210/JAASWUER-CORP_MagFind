@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.magfind.views.CategoriasView
+import com.example.magfind.views.VerifyCodeView
 import com.example.magfind1.SessionManager
 import com.example.magfind1.ui.theme.ThemeViewModel
 import com.example.magfind1.views.*

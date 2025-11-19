@@ -156,15 +156,15 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
                 // ------------------------
                 // GMAIL
                 // ------------------------
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(5.dp))
                 Text(
                     text = "Cuenta de Gmail",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 20.dp, top = 20.dp)
+                    modifier = Modifier.padding(start = 10.dp, top = 10.dp)
                 )
 
-// Cargando estado
+                // Cargando estado
                 if (loadingGmail) {
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -176,7 +176,7 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                     if (gmailEmail == null) {
 
-                        // ❌ NO conectado
+                        //  NO conectado
                         Button(
                             onClick = {
                                 val jwt = session.getToken() ?: ""
