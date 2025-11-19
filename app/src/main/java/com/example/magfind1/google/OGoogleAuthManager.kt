@@ -4,7 +4,7 @@ import android.app.Activity
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption // ✅ Cambia esto
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import java.util.UUID
 
@@ -17,7 +17,6 @@ object GoogleAuthManager {
 
             val credentialManager = CredentialManager.create(activity)
 
-            // ✅ Agrega setRequestEmail(true)
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setServerClientId(CLIENT_ID)
                 .setFilterByAuthorizedAccounts(false)

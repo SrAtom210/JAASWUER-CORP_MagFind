@@ -16,9 +16,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.magfind.SessionManager
-import com.example.magfind.apis.AuthRepository
-import com.example.magfind.ui.theme.ThemeViewModel
+import com.example.magfind1.SessionManager
+import com.example.magfind1.apis.AuthRepository
+import com.example.magfind1.ui.theme.ThemeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
