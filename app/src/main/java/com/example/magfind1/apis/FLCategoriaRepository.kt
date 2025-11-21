@@ -23,21 +23,16 @@ class CategoriaRepository {
         }
     }
 
-    suspend fun agregarCategoria(token: String, nombre: String, regla: String?) {
-        try {
-            val body = CategoriaPersonalizadaIn(nombre, regla)
-            api.agregarCategoria(token, body)
-        } catch (e: Exception) {
-            Log.e("CategoriaRepo", "Error al agregar: ${e.message}")
-        }
+    // Ejemplo de cómo debe quedar en CategoriaRepository.kt
+    suspend fun agregarCategoria(token: String, nombre: String, regla: String, colorHex: String) {
+        // ... crear objeto CategoriaPersonalizadaIn con el color ...
+        val body = CategoriaPersonalizadaIn(nombre, regla, colorHex)
+        api.agregarCategoria(token, body)
     }
-    suspend fun editarCategoria(token: String, id: Int, nombre: String, regla: String?) {
-        try {
-            val body = CategoriaPersonalizadaIn(nombre, regla)
-            api.editarCategoria(token, id, body)
-        } catch (e: Exception) {
-            Log.e("CategoriaRepo", "Error al editar: ${e.message}")
-        }
+
+    suspend fun editarCategoria(token: String, id: Int, nombre: String, regla: String, colorHex: String) {
+        val body = CategoriaPersonalizadaIn(nombre, regla, colorHex)
+        api.editarCategoria(token,id,body)
     }
 
     suspend fun eliminarCategoria(token: String, id: Int) {
@@ -47,4 +42,6 @@ class CategoriaRepository {
             Log.e("CategoriaRepo", "Error al eliminar: ${e.message}")
         }
     }
+
+
 }

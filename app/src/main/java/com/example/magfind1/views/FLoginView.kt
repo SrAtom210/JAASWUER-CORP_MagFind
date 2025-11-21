@@ -1,12 +1,13 @@
 package com.example.magfind1.views
 
-// Credential Manager + Google ID
 import android.app.Activity
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,227 +19,313 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
 import androidx.navigation.NavHostController
+import com.example.magfind.components.fResetPasswordDialog
+import com.example.magfind1.R
 import com.example.magfind1.SessionManager
 import com.example.magfind1.apis.AuthRepository
-import com.example.magfind1.ui.theme.ThemeViewModel
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import kotlinx.coroutines.launch
-import com.example.magfind1.R
 import com.example.magfind1.google.GoogleAuthManager
+import com.example.magfind1.ui.theme.ThemeViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) {
 
+    // Campos login
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    // Forgot
+    var showForgotDialog by remember { mutableStateOf(false) }
+    var forgotLoading by remember { mutableStateOf(false) }
+
+    // Tabs
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf("Iniciar Sesión", "Registrarse")
+
+    // Theme
+    val isDark = themeViewModel.isDarkMode.collectAsState().value
+    val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
+    val textColor = if (isDark) Color.White else Color.DarkGray
+    val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
+
+    // Context
     val context = LocalContext.current
     val activity = context as Activity
-    val scope = rememberCoroutineScope()
-
     val repo = remember { AuthRepository() }
     val session = remember { SessionManager(context) }
+    val scope = rememberCoroutineScope()
 
-    val GOOGLE_CLIENT_ID =
-        "76794028126-h85vt3eva11286jjob5leq038mr61q6c.apps.googleusercontent.com"
+    Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
+        Box(modifier = Modifier.fillMaxSize()) {
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var selectedTab by remember { mutableStateOf(0) }
-
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 40.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            Image(
-                painter = painterResource(R.drawable.magfind),
-                contentDescription = "Logo",
-                modifier = Modifier.size(110.dp)
-            )
-
-            Text(
-                text = "MagFind",
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1976D2)
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.Transparent
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 40.dp)
+                    .padding(top = 60.dp), // evita que se corte Google login
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    text = { Text("Iniciar Sesión") }
-                )
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    text = { Text("Registrarse") }
-                )
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // =============== LOGIN ===============
-            if (selectedTab == 0) {
-
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth()
+                Image(
+                    painter = painterResource(R.drawable.magfind),
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp)
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Contraseña") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                Text(
+                    "MagFind",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 40.sp,
+                    color = accentColor
                 )
 
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // --- Login normal ---
-                Button(
-                    onClick = {
-                        scope.launch {
-                            val res = repo.login(email, password)
-                            if (res != null) {
-                                session.saveSession(res.id_usuario, res.token)
-                                Toast.makeText(context, "Bienvenido", Toast.LENGTH_SHORT).show()
-                                navController.navigate("Home") { popUpTo(0) }
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Credenciales incorrectas",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(Color(0xFF1976D2))
+                // ------------ TABS -------------
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = Color.Transparent,
+                    contentColor = accentColor,
+                    indicator = { pos ->
+                        TabRowDefaults.Indicator(
+                            Modifier
+                                .tabIndicatorOffset(pos[selectedTab])
+                                .height(3.dp),
+                            color = accentColor
+                        )
+                    }
                 ) {
-                    Text("Iniciar sesión", color = Color.White)
-                }
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-                // --- Login con Google ---
-                Button(
-                    onClick = {
-                        scope.launch {
-                            val token = GoogleAuthManager.signIn(activity)
-
-                            android.util.Log.d("GOOGLE_DATA", "Token recibido en LoginView: $token")
-
-                            if (token != null) {
-                                val response = repo.loginGoogle(token)
-                                if (response != null) {
-                                    session.saveSession(
-                                        response.id_usuario,
-                                        response.token
-                                    )
-                                    Toast.makeText(
-                                        context,
-                                        "Inicio con Google exitoso",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    navController.navigate("Home") { popUpTo(0) }
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Error al iniciar sesión con Google",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Token de Google vacío",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                    tabs.forEachIndexed { i, title ->
+                        Tab(
+                            selected = selectedTab == i,
+                            onClick = { selectedTab = i },
+                            text = {
+                                Text(
+                                    title,
+                                    color = if (selectedTab == i) accentColor else textColor,
+                                    fontWeight = if (selectedTab == i) FontWeight.Bold else FontWeight.Normal
+                                )
                             }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(Color.White)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.google_logo),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text("Continuar con Google", color = Color.Black)
-                }
-
-
-                // =============== REGISTRO ===============
-                if (selectedTab == 1) {
-
-                    var regEmail by remember { mutableStateOf("") }
-                    var regPass by remember { mutableStateOf("") }
-
-                    OutlinedTextField(
-                        value = regEmail,
-                        onValueChange = { regEmail = it },
-                        label = { Text("Correo electrónico") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    OutlinedTextField(
-                        value = regPass,
-                        onValueChange = { regPass = it },
-                        label = { Text("Contraseña") },
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation()
-                    )
-
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                val nombre = regEmail.substringBefore('@')
-                                val ok = repo.register(nombre, regEmail, regPass)
-                                if (ok) {
-                                    Toast.makeText(
-                                        context,
-                                        "Registro exitoso",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    navController.navigate("VerifyCode/$regEmail")
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Error al registrar",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF1976D2))
-                    ) {
-                        Text("Registrarse", color = Color.White)
+                        )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ----------- LOGIN / REGISTRO ------------
+                AnimatedContent(selectedTab) { tab ->
+
+                    // ========== LOGIN ==========
+                    if (tab == 0) {
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+
+                            OutlinedTextField(
+                                value = username,
+                                onValueChange = { username = it },
+                                label = { Text("Email", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                label = { Text("Contraseña", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                            )
+
+                            // --- CENTRADO ---
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                TextButton(onClick = { showForgotDialog = true }) {
+                                    Text("Olvidé mi contraseña", color = accentColor)
+                                }
+                            }
+
+                            // ---- LOGIN NORMAL ----
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        val res = repo.login(username, password)
+
+                                        if (res != null) {
+                                            val derivedName = username.substringBefore("@")
+
+                                            session.saveSession(
+                                                res.id_usuario,
+                                                res.token,
+                                                derivedName,
+                                                username
+                                            )
+
+                                            Toast.makeText(context, "Bienvenido $derivedName", Toast.LENGTH_SHORT).show()
+                                            navController.navigate("Home") { popUpTo(0) }
+                                        } else {
+                                            Toast.makeText(context, "Credenciales incorrectas.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(accentColor)
+                            ) {
+                                Text("Iniciar sesión", color = if (isDark) Color.Black else Color.White)
+                            }
+
+                            // ---- LOGIN GOOGLE ----
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        val googleToken = GoogleAuthManager.signIn(activity)
+
+                                        if (googleToken != null) {
+                                            val googleRes = repo.loginGoogle(googleToken)
+                                            if (googleRes != null) {
+
+                                                val emailGoogle = GoogleAuthManager.lastEmail ?: "google@unknown.com"
+                                                val nameGoogle = emailGoogle.substringBefore("@")
+
+                                                session.saveSession(
+                                                    googleRes.id_usuario,
+                                                    googleRes.token,
+                                                    nameGoogle,
+                                                    emailGoogle
+                                                )
+
+                                                session.saveDisplayName(nameGoogle)
+                                                session.saveEmail(emailGoogle)
+
+                                                Toast.makeText(context, "Inicio con Google exitoso", Toast.LENGTH_SHORT).show()
+                                                navController.navigate("Home") { popUpTo(0) }
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Cancelado", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(Color.White)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.google_logo),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Continuar con Google", color = Color.Black)
+                            }
+                        }
+                    }
+
+                    // ========== REGISTRO ==========
+                    else {
+
+                        var regEmail by remember { mutableStateOf("") }
+                        var regPass by remember { mutableStateOf("") }
+                        var loading by remember { mutableStateOf(false) }
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+
+                            OutlinedTextField(
+                                value = regEmail,
+                                onValueChange = { regEmail = it },
+                                label = { Text("Correo electrónico", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            OutlinedTextField(
+                                value = regPass,
+                                onValueChange = { regPass = it },
+                                label = { Text("Contraseña", color = textColor) },
+                                textStyle = LocalTextStyle.current.copy(color = textColor),
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Button(
+                                onClick = {
+                                    if (regEmail.isBlank() || regPass.isBlank()) {
+                                        Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
+                                    loading = true
+
+                                    scope.launch {
+                                        val nameDerived = regEmail.substringBefore("@")
+                                        val ok = repo.register(nameDerived, regEmail, regPass)
+
+                                        if (ok) {
+                                            Toast.makeText(context, "Registro exitoso", Toast.LENGTH_LONG).show()
+                                            navController.navigate("VerifyCode/$regEmail")
+                                        } else {
+                                            Toast.makeText(context, "El correo ya existe", Toast.LENGTH_LONG).show()
+                                        }
+
+                                        loading = false
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(accentColor)
+                            ) {
+                                if (loading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(22.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Text("Registrarse", color = if (isDark) Color.Black else Color.White)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---------- DIÁLOGO OLVIDÉ MIS CONTRASEÑA ----------
+            if (showForgotDialog) {
+                fResetPasswordDialog(
+                    themeViewModel = themeViewModel,
+                    isLoading = forgotLoading,
+                    onDismissRequest = { showForgotDialog = false },
+                    onSendClick = { email ->
+                        if (email.isBlank()) {
+                            Toast.makeText(context, "Ingresa un correo válido", Toast.LENGTH_SHORT).show()
+                        } else {
+                            forgotLoading = true
+                            scope.launch {
+                                val sent = repo.requestPasswordReset(email)
+                                if (sent) {
+                                    Toast.makeText(context, "Correo enviado", Toast.LENGTH_SHORT).show()
+                                    navController.navigate("VerifyCode/$email?isReset=true")
+                                    showForgotDialog = false
+                                } else {
+                                    Toast.makeText(context, "Correo no encontrado", Toast.LENGTH_SHORT).show()
+                                }
+                                forgotLoading = false
+                            }
+                        }
+                    }
+                )
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.example.magfind.views
+package com.example.magfind1.views
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -136,7 +136,8 @@ fun VerifyCodeView(
                                             val sessionManager = SessionManager(context)
                                             sessionManager.saveSession(
                                                 userId = result.id_usuario,
-                                                token = result.token
+                                                token = result.token,
+                                                username = result.username
                                             )
 
                                             Toast.makeText(context, "¡Verificación exitosa!", Toast.LENGTH_SHORT).show()
