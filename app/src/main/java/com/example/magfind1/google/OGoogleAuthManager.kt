@@ -12,6 +12,8 @@ object GoogleAuthManager {
 
     private const val CLIENT_ID =
         "76794028126-h85vt3eva11286jjob5leq038mr61q6c.apps.googleusercontent.com"
+    var lastEmail: String? = null    // <---- NUEVO
+
     suspend fun signIn(activity: Activity): String? {
         return try {
 
@@ -41,6 +43,9 @@ object GoogleAuthManager {
             """.trimIndent())
 
             val email = googleCred.id
+
+            lastEmail = email   // <---- GUARDA EL CORREO EN MEMORIA
+
             val idToken = googleCred.idToken
             Log.d("GOOGLE_CLIENT", "CLIENT_ID usado: $CLIENT_ID")
 

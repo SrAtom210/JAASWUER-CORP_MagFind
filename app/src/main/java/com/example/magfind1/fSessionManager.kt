@@ -3,6 +3,7 @@ package com.example.magfind1
 import android.content.Context
 import android.content.SharedPreferences
 
+
 class SessionManager(context: Context) {
 
     private val prefs: SharedPreferences =
@@ -16,6 +17,7 @@ class SessionManager(context: Context) {
         var token: String? = null
         var userId: Int? = null
         var username: String? = null
+        var email: String? = null
 
         fun loadSession(context: Context) {
             val prefs = context.getSharedPreferences("magfind_prefs", Context.MODE_PRIVATE)
@@ -28,17 +30,25 @@ class SessionManager(context: Context) {
     /**
      * Guarda sesión completa.
      */
-    fun saveSession(userId: Int, token: String, username: String? = null) {
+    fun saveSession(
+        userId: Int,
+        token: String,
+        username: String? = null,
+        email: String? = null
+    ) {
         prefs.edit()
             .putString(KEY_TOKEN, token)
             .putInt(KEY_USER_ID, userId)
             .putString(KEY_USERNAME, username)
+            .putString("EMAIL", email)
             .apply()
 
         Companion.token = token
         Companion.userId = userId
         Companion.username = username
+        Companion.email = email
     }
+
 
     fun getToken(): String? = prefs.getString(KEY_TOKEN, null)
 
