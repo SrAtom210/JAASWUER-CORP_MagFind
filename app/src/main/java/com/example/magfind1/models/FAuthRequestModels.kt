@@ -19,13 +19,16 @@ data class GenericResponse(
 
 data class LoginRequest(
     val username: String,
-    val password: String
+    val password: String,
+
 )
 
 data class LoginResponse(
-    val token: String, // El token JWT
-    val id_usuario: Int
+    val token: String,
+    val id_usuario: Int,
+    val username: String
 )
+
 
 data class EmailRequest(
     val email: String
@@ -56,13 +59,17 @@ data class CategoriaDto(
     val id_categoria: Int,
     val id_usuario: Int,
     val nombre: String,
-    val regla: String
+    val regla: String,
+    val esFavorita: Boolean = false,
+    val colorHex: String? = "#1976D2"
+
 )
 
 // Para agregar/editar categoría
 data class CategoriaPersonalizadaIn(
     val nombre: String,
-    val regla: String?
+    val regla: String?,
+    val colorHex: String
 )
 
 // DTO para /correos

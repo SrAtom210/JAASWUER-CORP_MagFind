@@ -109,4 +109,13 @@ dependencies {
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.ui:ui")
 
+    //NOTIFICACIONES PUSH
+    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    apply(plugin = "com.google.gms.google-services")
+
+    //fotos de perfil
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+
 }

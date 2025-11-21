@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.magfind1.SessionManager
 import com.example.magfind1.components.fPlantilla
 import com.example.magfind1.ui.theme.ThemeViewModel
@@ -32,19 +33,18 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
     val error = cuentaVM.error.value
     val loading = cuentaVM.loading.value
 
-    // ****** FIX SESSION *******
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val token = sessionManager.getToken()
 
-    // Solicitar datos al abrir
+    // Cargar info al iniciar
     LaunchedEffect(Unit) {
         cuentaVM.cargarCuenta(token)
     }
 
     fPlantilla(
         title = "Mi Cuenta",
-        navController,
+        navController = navController,
         themeViewModel = themeViewModel,
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
@@ -55,7 +55,9 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
             "Suscripcion" to { navController.navigate("Suscripcion") }
         )
     ) { innerPadding ->
+
         when {
+            // ======================== LOADING ========================
             loading -> {
                 Box(
                     modifier = Modifier
@@ -67,6 +69,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                 }
             }
 
+            // ======================== ERROR ==========================
             error != null -> {
                 Box(
                     modifier = Modifier
@@ -78,7 +81,13 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                 }
             }
 
+            // ======================== CUENTA ==========================
             cuenta != null -> {
+
+                // Datos guardados de Login con Google o nombre local
+                val photoUrl = sessionManager.getProfilePhoto()
+                val displayName = sessionManager.getDisplayName() ?: cuenta.nombre
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -87,6 +96,8 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
+
+                    // FOTO / INICIAL
                     Box(
                         modifier = Modifier
                             .size(120.dp)
@@ -94,28 +105,45 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                             .background(Color(0xFFDCE9FF)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = null,
-                            tint = Color(0xFF1976D2),
-                            modifier = Modifier.size(40.dp)
-                        )
+                        if (!photoUrl.isNullOrEmpty()) {
+                            AsyncImage(
+                                model = photoUrl,
+                                contentDescription = "Foto de perfil",
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .clip(CircleShape)
+                            )
+                        } else {
+                            Text(
+                                text = displayName.take(1).uppercase(),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 50.sp
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    //  Nombre y correo dinámicos
+                    // Nombre dinámico
                     Text(
-                        cuenta.nombre,
+                        displayName,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1976D2)
                     )
-                    Text(cuenta.email, fontSize = 16.sp, color = Color.Gray)
+
+                    // Correo
+                    Text(
+                        sessionManager.getEmail() ?: cuenta.email,
+                        fontSize = 16.sp,
+                        color = Color.Gray
+                    )
+
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // 🔹 Detalles de cuenta dinámicos
+                    // Detalles
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF4FF)),
@@ -134,7 +162,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
-                        onClick = { /* acción editar perfil */ },
+                        onClick = { /* editar perfil */ },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
                     ) {
                         Text("Editar perfil", color = Color.White)

@@ -1,6 +1,8 @@
 package com.example.magfind1
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,12 +27,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun pedirPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permiso = android.Manifest.permission.POST_NOTIFICATIONS
+            if (checkSelfPermission(permiso) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(permiso), 100)
+            }
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         // Cargar sesión si existe
         SessionManager.loadSession(this)
+
+        //permiso para notificaciones push
+        pedirPermisoNotificaciones()
 
         setContent {
             val isDarkMode by themeViewModel.isDarkMode.collectAsState()

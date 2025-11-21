@@ -104,5 +104,23 @@ class AuthRepository {
         }
     }
 
+    suspend fun registrarToken(token: String): Boolean {
+        return try {
+            val body = mapOf("token" to token)
+            val response = api.registrarToken(body)
+
+            response.isSuccessful
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun obtenerCuenta(token: String): CuentaResponse {
+        return api.obtenerCuenta(token)
+    }
+
 }
+
+
+
 
