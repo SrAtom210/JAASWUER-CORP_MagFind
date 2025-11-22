@@ -49,6 +49,9 @@ class MainActivity : ComponentActivity() {
         //permiso para notificaciones push
         pedirPermisoNotificaciones()
 
+        //anuncios
+        MobileAds.initialize(this) {}
+
         setContent {
             val isDarkMode by themeViewModel.isDarkMode.collectAsState()
             MagFindTheme(darkTheme = isDarkMode) {

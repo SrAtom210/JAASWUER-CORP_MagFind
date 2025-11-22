@@ -1,10 +1,10 @@
 package com.example.magfind1.views
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -57,7 +58,6 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
     ) { innerPadding ->
 
         when {
-            // ======================== LOADING ========================
             loading -> {
                 Box(
                     modifier = Modifier
@@ -69,7 +69,6 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                 }
             }
 
-            // ======================== ERROR ==========================
             error != null -> {
                 Box(
                     modifier = Modifier
@@ -81,12 +80,11 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                 }
             }
 
-            // ======================== CUENTA ==========================
             cuenta != null -> {
 
-                // Datos guardados de Login con Google o nombre local
-                val photoUrl = sessionManager.getProfilePhoto()
-                val displayName = sessionManager.getDisplayName() ?: cuenta.nombre
+                // AHORA USAMOS LOS DATOS DE LA API
+                val photoUrl = cuenta.foto
+                val displayName = cuenta.nombre
 
                 Column(
                     modifier = Modifier
@@ -97,7 +95,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                     verticalArrangement = Arrangement.Top
                 ) {
 
-                    // FOTO / INICIAL
+                    // FOTO
                     Box(
                         modifier = Modifier
                             .size(120.dp)
@@ -125,7 +123,6 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Nombre dinámico
                     Text(
                         displayName,
                         fontSize = 22.sp,
@@ -133,17 +130,15 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                         color = Color(0xFF1976D2)
                     )
 
-                    // Correo
                     Text(
-                        sessionManager.getEmail() ?: cuenta.email,
+                        cuenta.email,
                         fontSize = 16.sp,
                         color = Color.Gray
                     )
 
-
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // Detalles
+                    // Detalles de la cuenta
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFEAF4FF)),
@@ -161,11 +156,32 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    var showEditPopup by remember { mutableStateOf(false) }
+
                     Button(
-                        onClick = { /* editar perfil */ },
+                        onClick = { showEditPopup = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
                     ) {
                         Text("Editar perfil", color = Color.White)
+                    }
+
+                    if (showEditPopup) {
+                        EditProfilePopup(
+                            currentName = displayName,
+                            currentPhoto = photoUrl,
+                            onDismiss = { showEditPopup = false },
+                            onSave = { newName, newPhoto ->
+                                cuentaVM.editarPerfil(newName, newPhoto) { ok ->
+                                    if (ok) {
+                                        Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+                                        showEditPopup = false
+                                        cuentaVM.cargarCuenta(token)
+                                    } else {
+                                        Toast.makeText(context, "Error al actualizar", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -183,5 +199,89 @@ fun fInfoRow(label: String, value: String) {
     ) {
         Text(label, fontSize = 16.sp, color = Color.Black)
         Text(value, fontSize = 16.sp, color = Color.Gray)
+    }
+}
+
+@Composable
+fun EditProfilePopup(
+    currentName: String,
+    currentPhoto: String?,
+    onDismiss: () -> Unit,
+    onSave: (String, String?) -> Unit
+) {
+    var name by remember { mutableStateOf(currentName) }
+    var photo by remember { mutableStateOf(currentPhoto ?: "") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(6.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    "Editar perfil",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1976D2)
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                AsyncImage(
+                    model = photo,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color.LightGray)
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = photo,
+                    onValueChange = { photo = it },
+                    label = { Text("URL de foto") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    TextButton(onClick = onDismiss) {
+                        Text("Cancelar")
+                    }
+
+                    Button(
+                        onClick = { onSave(name.trim(), photo.trim()) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                    ) {
+                        Text("Guardar", color = Color.White)
+                    }
+                }
+            }
+        }
     }
 }

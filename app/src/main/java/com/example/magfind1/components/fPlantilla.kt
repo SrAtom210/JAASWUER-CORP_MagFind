@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -23,9 +24,8 @@ import com.example.magfind1.SessionManager
 import com.example.magfind1.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 
-// Importamos el componente del anuncio que acabamos de crear
+// Componentes adicionales
 import com.example.magfind1.components.AdMobBanner
-// Import del menú estilo Google (asegúrate que este archivo exista)
 import com.example.magfind1.components.GoogleStyleProfileMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,51 +50,63 @@ fun fPlantilla(
     val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
 
     val currentUsername = session.getDisplayName()
+    val currentEmail = session.getEmail()
+    val currentPlan = session.getPlan()?.replaceFirstChar { it.uppercase() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                modifier = Modifier.width(340.dp),
+                modifier = Modifier.width(320.dp),
                 drawerContainerColor = drawerBackground
             ) {
-                // COLUMNA PRINCIPAL: Ocupa todo el alto del Drawer
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState()) // Permite scroll si la pantalla es pequeña
+                        .verticalScroll(rememberScrollState())
                 ) {
-
-                    // 1. CABECERA (Perfil)
+                    // HEADER
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(accentColor)
-                            .padding(vertical = 40.dp, horizontal = 20.dp)
+                            .padding(horizontal = 20.dp, vertical = 35.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(64.dp)
+                            modifier = Modifier.size(60.dp)
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         Text(
                             text = currentUsername.toString(),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         )
+
                         Text(
-                            text = session.getEmail().toString(),
-                            color = Color.White.copy(alpha = 0.8f),
+                            text = currentEmail.toString(),
+                            color = Color.White.copy(alpha = 0.85f),
                             fontSize = 14.sp
                         )
+
+                        if (!currentPlan.isNullOrEmpty()) {
+                            Text(
+                                text = "Plan: $currentPlan",
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(top = 6.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 2. ITEMS DEL MENÚ
                     Text(
                         text = "Menú",
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -103,6 +115,7 @@ fun fPlantilla(
                         ),
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     drawerItems.forEach { (itemTitle, onClick) ->
@@ -126,21 +139,22 @@ fun fPlantilla(
                         }
                     }
 
-                    // 4. ANUNCIO y LOGOUT (Pegados al fondo)
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // Banner grande, adaptive y sin fondos
+                    // --- ANUNCIO REAL ---
                     AdMobBanner(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     )
 
-                    // Botón Cerrar Sesión
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // LOGOUT
                     TextButton(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp),
                         onClick = {
                             session.clearSession()
                             navController.navigate("Login") { popUpTo(0) }
@@ -153,9 +167,12 @@ fun fPlantilla(
                             tint = Color.Red
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("Cerrar Sesión", color = Color.Red, fontWeight = FontWeight.Bold)
+                        Text(
+                            "Cerrar Sesión",
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-
                 }
             }
         }
@@ -174,7 +191,7 @@ fun fPlantilla(
                             GoogleStyleProfileMenu(
                                 navController = navController,
                                 userName = currentUsername.toString(),
-                                email = session.getEmail().toString()
+                                email = currentEmail.toString()
                             )
                         }
                     },
@@ -183,9 +200,9 @@ fun fPlantilla(
                     )
                 )
             }
-        ) { inner ->
+        ) { innerPadding ->
             Box(modifier = Modifier.fillMaxSize()) {
-                content(inner)
+                content(innerPadding)
             }
         }
     }
@@ -214,6 +231,7 @@ fun fDrawerItem(
             )
             Spacer(modifier = Modifier.width(16.dp))
         }
+
         Text(title, color = textColor, fontSize = 16.sp)
     }
 }
