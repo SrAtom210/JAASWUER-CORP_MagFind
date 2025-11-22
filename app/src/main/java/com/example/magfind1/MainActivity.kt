@@ -16,6 +16,7 @@ import com.example.magfind1.pnavigation.NavManager
 import com.example.magfind1.ui.theme.MagFindTheme
 import com.example.magfind1.ui.theme.ThemeRepository
 import com.example.magfind1.ui.theme.ThemeViewModel
+import com.google.android.gms.ads.MobileAds
 
 class MainActivity : ComponentActivity() {
 
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        MobileAds.initialize(this) {}
         // Cargar sesión si existe
         SessionManager.loadSession(this)
 

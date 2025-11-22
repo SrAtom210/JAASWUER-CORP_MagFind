@@ -33,6 +33,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.magfind1.SessionManager
 import com.example.magfind1.apis.CategoriaRepository
+import com.example.magfind1.components.AdMobBanner
 import com.example.magfind1.models.CategoriaDto
 import com.example.magfind1.ui.theme.ThemeViewModel
 import com.example.magfind1.components.fPlantilla
@@ -130,6 +131,22 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                     else -> {
                         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             items(categorias, key = { it.id_categoria }) { cat ->
+                                if (true) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(300.dp)        // << ESTE ES EL "MOUNSTRO"
+                                            .padding(8.dp)
+                                            .background(Color(0xFFE3F2FD), RoundedCornerShape(16.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        AdMobBanner(
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
 
                                 // Convertimos el hex string a Color real
                                 val catColor = parseColor(cat.colorHex)
