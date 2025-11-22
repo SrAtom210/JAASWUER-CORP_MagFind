@@ -24,11 +24,12 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val token: String,
     val id_usuario: Int,
-    val username: String
+    val token: String,
+    val username: String?,
+    val email: String?,
+    val plan: String?
 )
-
 
 data class EmailRequest(
     val email: String
@@ -93,6 +94,7 @@ data class CuentaData(
     val id_usuario: Int,
     val nombre: String,
     val email: String,
+    val foto: String?,               //  ← AGREGA ESTO
     val fecha_registro: String,
     val activo: String,
     val tipo_suscripcion: String?,
@@ -100,8 +102,14 @@ data class CuentaData(
     val fecha_fin: String?
 )
 
+
 // Gmail connect
 data class DCGmailConnectRequest(
     val code: String,
     val token: String
+)
+
+data class EditarPerfilRequest(
+    val nombre: String,
+    val foto: String   // Base64
 )

@@ -3,13 +3,14 @@ package com.example.magfind1.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +24,8 @@ import com.example.magfind1.SessionManager
 import com.example.magfind1.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 
-// Import del menú estilo Google
+// Componentes adicionales
+import com.example.magfind1.components.AdMobBanner
 import com.example.magfind1.components.GoogleStyleProfileMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,113 +50,129 @@ fun fPlantilla(
     val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
 
     val currentUsername = session.getDisplayName()
+    val currentEmail = session.getEmail()
+    val currentPlan = session.getPlan()?.replaceFirstChar { it.uppercase() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                modifier = Modifier.width(280.dp),
+                modifier = Modifier.width(320.dp),
                 drawerContainerColor = drawerBackground
             ) {
-                // Header
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(accentColor)
-                        .padding(horizontal = 20.dp, vertical = 30.dp)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(50.dp)
+                    // HEADER
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(accentColor)
+                            .padding(horizontal = 20.dp, vertical = 35.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(60.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Text(
+                            text = currentUsername.toString(),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+
+                        Text(
+                            text = currentEmail.toString(),
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 14.sp
+                        )
+
+                        if (!currentPlan.isNullOrEmpty()) {
+                            Text(
+                                text = "Plan: $currentPlan",
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(top = 6.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Menú",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = accentColor,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier.padding(horizontal = 20.dp)
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = currentUsername.toString(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                    Text(
-                        text = session.getEmail().toString(),
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 14.sp
-                    )
-                }
+                    drawerItems.forEach { (itemTitle, onClick) ->
+                        val icon = when (itemTitle.lowercase()) {
+                            "home" -> Icons.Default.Home
+                            "categorías" -> Icons.Default.Category
+                            "correos" -> Icons.Default.Email
+                            "ajustes" -> Icons.Default.Settings
+                            "mi cuenta" -> Icons.Default.Person
+                            "suscripción" -> Icons.Default.Star
+                            else -> Icons.Default.ChevronRight
+                        }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Título
-                Text(
-                    text = "Menú",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = accentColor,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Items del Drawer
-                drawerItems.forEach { (itemTitle, onClick) ->
-                    val icon = when (itemTitle.lowercase()) {
-                        "home" -> Icons.Default.Home
-                        "categorías" -> Icons.Default.Category
-                        "correos" -> Icons.Default.Email
-                        "ajustes" -> Icons.Default.Settings
-                        "mi cuenta" -> Icons.Default.Person
-                        "suscripción" -> Icons.Default.Star
-                        else -> Icons.Default.ChevronRight
+                        fDrawerItem(
+                            title = itemTitle,
+                            textColor = textColor,
+                            icon = icon
+                        ) {
+                            onClick()
+                            scope.launch { drawerState.close() }
+                        }
                     }
 
-                    fDrawerItem(
-                        title = itemTitle,
-                        textColor = textColor,
-                        icon = icon
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    // --- ANUNCIO REAL ---
+                    AdMobBanner(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // LOGOUT
+                    TextButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        onClick = {
+                            session.clearSession()
+                            navController.navigate("Login") { popUpTo(0) }
+                            scope.launch { drawerState.close() }
+                        }
                     ) {
-                        onClick()
-                        scope.launch { drawerState.close() }
+                        Icon(
+                            Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = "Cerrar sesión",
+                            tint = Color.Red
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Cerrar Sesión",
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // AD
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(16.dp)
-                        .background(Color(0xFFE0E0E0), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Ad", fontSize = 18.sp, color = Color.DarkGray)
-                }
-            }
-
-            // Logout
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Bottom
-            ) {
-                TextButton(
-                    onClick = {
-                        session.clearSession()
-                        navController.navigate("Login") { popUpTo(0) }
-                        scope.launch { drawerState.close() }
-                    }
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.Logout,
-                        contentDescription = "Cerrar sesión",
-                        tint = Color.Red
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text("Cerrar Sesión", color = Color.Red)
                 }
             }
         }
@@ -173,7 +191,7 @@ fun fPlantilla(
                             GoogleStyleProfileMenu(
                                 navController = navController,
                                 userName = currentUsername.toString(),
-                                email = session.getEmail().toString()
+                                email = currentEmail.toString()
                             )
                         }
                     },
@@ -182,9 +200,9 @@ fun fPlantilla(
                     )
                 )
             }
-        ) { inner ->
+        ) { innerPadding ->
             Box(modifier = Modifier.fillMaxSize()) {
-                content(inner)
+                content(innerPadding)
             }
         }
     }
@@ -209,11 +227,11 @@ fun fDrawerItem(
                 imageVector = it,
                 contentDescription = title,
                 tint = textColor,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
         }
 
-        Text(title, color = textColor)
+        Text(title, color = textColor, fontSize = 16.sp)
     }
 }

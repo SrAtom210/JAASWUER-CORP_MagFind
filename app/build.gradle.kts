@@ -117,5 +117,8 @@ dependencies {
     //fotos de perfil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    //anuncios
+    implementation("com.google.android.gms:play-services-ads:23.0.0")
+
 
 }

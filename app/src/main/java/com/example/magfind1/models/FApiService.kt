@@ -92,4 +92,10 @@ interface ApiService {
     @POST("/fcm/token")
     suspend fun registrarToken(@Body body: Map<String, String>): Response<Map<String, String>>
 
+    @PUT("usuario/editar")
+    suspend fun editarPerfil(
+        @Body body: Map<String, String>
+    ): GenericResponse
+
+
 }

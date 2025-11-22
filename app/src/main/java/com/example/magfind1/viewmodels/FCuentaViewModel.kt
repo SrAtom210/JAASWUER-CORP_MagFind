@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.magfind1.SessionManager
+import com.example.magfind1.apis.AuthRepository
 import com.example.magfind1.apis.CuentaRepository
 import com.example.magfind1.models.CuentaData
 import kotlinx.coroutines.launch
@@ -46,5 +48,14 @@ class CuentaViewModel : ViewModel() {
             }
         }
     }
+
+    fun editarPerfil(nombre: String?, foto: String?, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val ok = AuthRepository().editarPerfil(nombre, foto)
+            onResult(ok)
+        }
+    }
+
+
 
 }

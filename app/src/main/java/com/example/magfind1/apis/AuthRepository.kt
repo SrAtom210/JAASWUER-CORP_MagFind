@@ -2,6 +2,7 @@ package com.example.magfind1.apis
 
 import android.util.Log
 import com.example.magfind1.RetrofitClient
+import com.example.magfind1.SessionManager
 import com.example.magfind1.models.*
 
 class AuthRepository {
@@ -118,6 +119,24 @@ class AuthRepository {
     suspend fun obtenerCuenta(token: String): CuentaResponse {
         return api.obtenerCuenta(token)
     }
+
+    suspend fun editarPerfil(nombre: String?, foto: String?): Boolean {
+        val token = SessionManager.token ?: return false
+
+        val body = mapOf(
+            "token" to token,
+            "nombre" to (nombre ?: ""),
+            "foto" to (foto ?: "")
+        )
+
+        return try {
+            val response = api.editarPerfil(body)
+            response.status.equals("ok", ignoreCase = true)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
 
 }
 
