@@ -6,12 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,17 +17,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.magfind1.SessionManager
 import com.example.magfind1.components.fPlantilla
 import com.example.magfind1.ui.theme.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
-    val nombreUsuario = "Christian"
+
+    // ⭐ Obtiene el nombre real del usuario que está logueado
+    val nombreUsuario = SessionManager.username ?: "Usuario"
 
     fPlantilla(
         title = "Inicio",
@@ -62,7 +61,7 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
                     fontSize = 14.sp
                 )
                 Text(
-                    text = nombreUsuario,
+                    text = nombreUsuario,   // ⭐ Aquí ya se muestra el nombre real
                     fontWeight = FontWeight.Bold,
                     fontSize = 26.sp,
                     color = Color(0xFF0D47A1)
@@ -83,7 +82,7 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
                 icon = Icons.Default.Email
             ) { navController.navigate("CorreosCat") }
 
-            // 🟠 Categorias Favoritas
+            // 🟣 Categorías Favoritas
             FullGradientCard(
                 title = "Categorías Favoritas",
                 subtitle = "Accede a tus Categorías Favoritas",
@@ -92,7 +91,7 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
                 icon = Icons.Default.Folder
             ) { navController.navigate("Categorias") }
 
-            // 🟠 Notificaciones
+            // 🟡 Notificaciones
             FullGradientCard(
                 title = "Notificaciones",
                 subtitle = "Tienes 3 alertas nuevas",
@@ -104,7 +103,8 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
     }
 }
 
-// 🔷 Card completa coloreada
+
+// 🔷 Card coloreada
 @Composable
 fun FullGradientCard(
     title: String,
@@ -143,7 +143,12 @@ fun FullGradientCard(
                         .background(Color.White.copy(alpha = 0.3f), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
         }

@@ -16,6 +16,7 @@ import com.example.magfind1.pnavigation.NavManager
 import com.example.magfind1.ui.theme.MagFindTheme
 import com.example.magfind1.ui.theme.ThemeRepository
 import com.example.magfind1.ui.theme.ThemeViewModel
+import com.google.android.gms.ads.MobileAds
 
 class MainActivity : ComponentActivity() {
 
@@ -46,6 +47,9 @@ class MainActivity : ComponentActivity() {
 
         //permiso para notificaciones push
         pedirPermisoNotificaciones()
+
+        //anuncios
+        MobileAds.initialize(this) {}
 
         setContent {
             val isDarkMode by themeViewModel.isDarkMode.collectAsState()

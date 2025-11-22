@@ -1,6 +1,7 @@
 package com.example.magfind1.views
 
 import android.app.Activity
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
@@ -169,9 +170,9 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                                 res.id_usuario,
                                                 res.token,
                                                 derivedName,
-                                                username
+                                                username,
+                                                res.plan
                                             )
-
                                             Toast.makeText(context, "Bienvenido $derivedName", Toast.LENGTH_SHORT).show()
                                             navController.navigate("Home") { popUpTo(0) }
                                         } else {
@@ -202,11 +203,11 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                                     googleRes.id_usuario,
                                                     googleRes.token,
                                                     nameGoogle,
-                                                    emailGoogle
+                                                    emailGoogle,
+                                                    googleRes.plan
                                                 )
 
-                                                session.saveDisplayName(nameGoogle)
-                                                session.saveEmail(emailGoogle)
+
 
                                                 Toast.makeText(context, "Inicio con Google exitoso", Toast.LENGTH_SHORT).show()
                                                 navController.navigate("Home") { popUpTo(0) }
