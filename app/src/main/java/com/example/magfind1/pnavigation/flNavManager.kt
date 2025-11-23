@@ -45,6 +45,17 @@ fun NavManager(themeViewModel: ThemeViewModel) {
             CategoriasView(navController, themeViewModel)
         }
 
+        composable(
+            route = "DetalleCorreo/{emailId}",
+            arguments = listOf(navArgument("emailId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            // Extraemos el ID de la URL
+            val emailId = backStackEntry.arguments?.getInt("emailId") ?: 0
+
+            // Llamamos a la nueva vista
+            fDetalleCorreoView(navController, emailId, themeViewModel)
+        }
+
         composable("CorreosCat") {
             fCorreosCategorizadosView(navController, themeViewModel)
         }

@@ -1,32 +1,44 @@
 package com.example.magfind1.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.magfind1.apis.CorreosRepository
-import com.example.magfind1.models.CategoriasResponse
+import com.example.magfind1.models.Correo
+import com.example.magfind1.RetrofitClient
+import com.example.magfind1.models.cCorreo
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class CorreosViewModel : ViewModel() {
-    private val repo = CorreosRepository()
+class FCorreosViewModel : ViewModel() {
 
-    private val _correos = MutableStateFlow<CategoriasResponse>(emptyMap())
-    val correos = _correos.asStateFlow()
+    // Estado para la lista de correos agrupados por categoría
+    private val _correosMap = MutableStateFlow<Map<String, List<cCorreo>>>(emptyMap())
+    val correosMap: StateFlow<Map<String, List<cCorreo>>> = _correosMap
+
+    // Estado para manejar carga y errores
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     fun cargarCorreos(token: String) {
-        Log.d("CorreosVM", "Solicitando correos…")
-
         viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
             try {
-                val res = repo.listarCorreos(token)
-                Log.d("CorreosVM", "Respuesta: $res")
-                _correos.value = res
+                val api = RetrofitClient.instance
+                val respuesta = api.obtenerCorreos(token)
+
+                // Asignamos el mapa directamente
+                _correosMap.value = respuesta
+
             } catch (e: Exception) {
-                Log.e("CorreosVM", "Error: ${e.message}")
+                _errorMessage.value = "Error al cargar correos: ${e.message}"
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 }
-

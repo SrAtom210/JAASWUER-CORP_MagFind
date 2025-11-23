@@ -55,20 +55,20 @@ interface ApiService {
     @POST("categoria/agregar/{token}")
     suspend fun agregarCategoria(
         @Path("token") token: String,
-        @Body body: CategoriaPersonalizadaIn
+        @Body body: CategoriaPersonalizadaIn // Enviamos el objeto JSON completo
     ): GenericResponse
 
     @PUT("categoria/editar/{token}/{id_categoria}")
     suspend fun editarCategoria(
         @Path("token") token: String,
-        @Path("id_categoria") id: Int,
-        @Body body: CategoriaPersonalizadaIn
+        @Path("id_categoria") idCategoria: Int,
+        @Body body: CategoriaPersonalizadaIn // Enviamos el objeto JSON completo
     ): GenericResponse
 
     @DELETE("categoria/eliminar/{token}/{id_categoria}")
     suspend fun eliminarCategoria(
         @Path("token") token: String,
-        @Path("id_categoria") id: Int
+        @Path("id_categoria") idCategoria: Int
     ): GenericResponse
 
     // --- CORREOS CLASIFICADOS ---
@@ -97,5 +97,10 @@ interface ApiService {
         @Body body: Map<String, String>
     ): GenericResponse
 
+    @GET("correo/detalle/{id}/{token}")
+    suspend fun obtenerDetalleCorreo(
+        @Path("id") id: Int,
+        @Path("token") token: String
+    ): CorreoDetalleResponse
 
 }
