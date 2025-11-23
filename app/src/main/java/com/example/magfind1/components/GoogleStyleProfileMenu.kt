@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.magfind1.SessionManager
 
 @Composable
@@ -29,25 +30,38 @@ fun GoogleStyleProfileMenu(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // Avatar pequeño de la TopBar
+    val session = SessionManager(navController.context)
+    val photo = session.getProfilePhoto()
+
+    // ========================= AVATAR PEQUEÑO =========================
     Box(
         modifier = Modifier
             .padding(end = 16.dp)
             .size(40.dp)
-            .border(1.dp, Color.Black, CircleShape)
             .clip(CircleShape)
-            .background(Color(0xFF1976D2))
+            .background(Color.LightGray)
             .clickable { expanded = true },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = userName.take(1).uppercase(),
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-        )
+        if (!photo.isNullOrEmpty()) {
+            AsyncImage(
+                model = photo,
+                contentDescription = "Foto",
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+            )
+        } else {
+            Text(
+                text = userName.take(1).uppercase(),
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        }
     }
 
+    // ======================= MENÚ ESTILO GOOGLE =========================
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { expanded = false },
@@ -57,7 +71,7 @@ fun GoogleStyleProfileMenu(
             .padding(bottom = 8.dp)
     ) {
 
-        // Cabecera del menú
+        // --------------------- CABECERA ---------------------
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -66,20 +80,33 @@ fun GoogleStyleProfileMenu(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .border(1.dp, Color.Black, CircleShape)
-                    .clip(CircleShape)
-                    .background(Color(0xFF1976D2)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = userName.take(1).uppercase(),
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 40.sp
+
+            // FOTO GRANDE
+            if (!photo.isNullOrEmpty()) {
+                AsyncImage(
+                    model = photo,
+                    contentDescription = "Foto perfil",
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.Black, CircleShape)
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .border(1.dp, Color.Black, CircleShape)
+                        .clip(CircleShape)
+                        .background(Color(0xFF1976D2)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = userName.take(1).uppercase(),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 40.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -103,7 +130,7 @@ fun GoogleStyleProfileMenu(
 
         Divider(modifier = Modifier.padding(vertical = 4.dp))
 
-        // Agregar otra cuenta
+        // ------------------- AGREGAR OTRA CUENTA -------------------
         DropdownMenuItem(
             text = { Text("Agregar otra cuenta", fontWeight = FontWeight.Medium) },
             onClick = {
@@ -113,17 +140,14 @@ fun GoogleStyleProfileMenu(
             leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
         )
 
-        // Cerrar sesión (corregido)
+        // ------------------- CERRAR SESIÓN -------------------
         DropdownMenuItem(
             text = { Text("Cerrar sesión", fontWeight = FontWeight.Medium) },
             onClick = {
                 expanded = false
-
-                // Limpiar sesión de forma correcta
                 val sm = SessionManager(navController.context)
                 sm.clearSession()
 
-                // Navegación segura
                 navController.navigate("Login") {
                     popUpTo(navController.graph.startDestinationId) {
                         inclusive = true
@@ -135,7 +159,6 @@ fun GoogleStyleProfileMenu(
 
         Divider(modifier = Modifier.padding(vertical = 4.dp))
 
-        // Footer opcional
         Row(
             modifier = Modifier
                 .fillMaxWidth()

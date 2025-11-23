@@ -23,6 +23,9 @@ class SessionManager(context: Context) {
         var plan: String? = null
         var autoSync: Boolean = false
 
+        // 🔥 ESTA ES LA NUEVA VARIABLE QUE TE FALTABA
+        var profilePhoto: String? = null
+
         fun loadSession(context: Context) {
             val prefs = context.getSharedPreferences("magfind_prefs", Context.MODE_PRIVATE)
 
@@ -32,9 +35,10 @@ class SessionManager(context: Context) {
             email = prefs.getString(KEY_EMAIL, null)
             plan = prefs.getString(KEY_PLAN, null)
             autoSync = prefs.getBoolean(KEY_AUTOSYNC, false)
+            profilePhoto = prefs.getString("profile_photo", null)
         }
 
-        fun isLoggedIn(context: Context): Boolean {
+    fun isLoggedIn(context: Context): Boolean {
             val prefs = context.getSharedPreferences("magfind_prefs", Context.MODE_PRIVATE)
             val storedToken = prefs.getString(KEY_TOKEN, null)
             return !storedToken.isNullOrEmpty()
@@ -142,4 +146,15 @@ class SessionManager(context: Context) {
         Companion.plan = null
         Companion.autoSync = false
     }
+    fun saveProfile(name: String?, photo: String?) {
+        val editor = prefs.edit()
+        if (name != null) editor.putString(KEY_USERNAME, name)
+        if (photo != null) editor.putString("profile_photo", photo)
+        editor.apply()
+
+        Companion.username = name
+        Companion.profilePhoto = photo
+    }
+
+
 }

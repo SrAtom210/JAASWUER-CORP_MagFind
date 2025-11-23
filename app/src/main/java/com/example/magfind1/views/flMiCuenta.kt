@@ -1,6 +1,9 @@
 package com.example.magfind1.views
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -43,6 +46,18 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
         cuentaVM.cargarCuenta(token)
     }
 
+    var showEditPopup by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<String?>(null) }
+
+    // CHOOSER
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri = uri.toString()
+        }
+    }
+
     fPlantilla(
         title = "Mi Cuenta",
         navController = navController,
@@ -83,8 +98,9 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
             cuenta != null -> {
 
                 // AHORA USAMOS LOS DATOS DE LA API
-                val photoUrl = cuenta.foto
-                val displayName = cuenta.nombre
+                val displayName = sessionManager.getDisplayName() ?: cuenta.nombre
+                val photoUrl = sessionManager.getProfilePhoto() ?: cuenta.foto
+
 
                 Column(
                     modifier = Modifier
@@ -167,19 +183,22 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                     if (showEditPopup) {
                         EditProfilePopup(
-                            currentName = displayName,
-                            currentPhoto = photoUrl,
+                            currentName = cuenta.nombre,
+                            currentPhoto = cuenta.foto,
+                            onPickImage = { imagePicker.launch("image/*") },
+                            selectedImage = selectedImageUri,
                             onDismiss = { showEditPopup = false },
                             onSave = { newName, newPhoto ->
                                 cuentaVM.editarPerfil(newName, newPhoto) { ok ->
                                     if (ok) {
-                                        Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
-                                        showEditPopup = false
+                                        sessionManager.saveProfile(newName, newPhoto)  // ← GUARDA TODO
                                         cuentaVM.cargarCuenta(token)
-                                    } else {
+                                        Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+                                    }else {
                                         Toast.makeText(context, "Error al actualizar", Toast.LENGTH_SHORT).show()
                                     }
                                 }
+
                             }
                         )
                     }
@@ -188,6 +207,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
         }
     }
 }
+
 
 @Composable
 fun fInfoRow(label: String, value: String) {
@@ -206,38 +226,32 @@ fun fInfoRow(label: String, value: String) {
 fun EditProfilePopup(
     currentName: String,
     currentPhoto: String?,
+    selectedImage: String?,
+    onPickImage: () -> Unit,
     onDismiss: () -> Unit,
     onSave: (String, String?) -> Unit
 ) {
     var name by remember { mutableStateOf(currentName) }
-    var photo by remember { mutableStateOf(currentPhoto ?: "") }
+
+    val displayPhoto = selectedImage ?: currentPhoto
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(6.dp)
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-                Text(
-                    "Editar perfil",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1976D2)
-                )
+                Text("Editar perfil", fontSize = 22.sp, fontWeight = FontWeight.Bold)
 
                 Spacer(Modifier.height(16.dp))
 
                 AsyncImage(
-                    model = photo,
+                    model = displayPhoto,
                     contentDescription = null,
                     modifier = Modifier
                         .size(100.dp)
@@ -245,16 +259,13 @@ fun EditProfilePopup(
                         .background(Color.LightGray)
                 )
 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
 
-                OutlinedTextField(
-                    value = photo,
-                    onValueChange = { photo = it },
-                    label = { Text("URL de foto") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Button(onClick = onPickImage) {
+                    Text("Seleccionar nueva foto")
+                }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(20.dp))
 
                 OutlinedTextField(
                     value = name,
@@ -269,17 +280,13 @@ fun EditProfilePopup(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancelar")
-                    }
+                    TextButton(onClick = onDismiss) { Text("Cancelar") }
 
                     Button(
-                        onClick = { onSave(name.trim(), photo.trim()) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
-                    ) {
-                        Text("Guardar", color = Color.White)
-                    }
+                        onClick = {
+                            onSave(name, displayPhoto)
+                        }
+                    ) { Text("Guardar", color = Color.White) }
                 }
             }
         }
