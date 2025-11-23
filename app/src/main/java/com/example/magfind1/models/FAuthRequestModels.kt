@@ -134,3 +134,9 @@ data class CorreoDetalleResponse(
     val cuerpo_completo: String,
     val fecha: String
 )
+
+data class PlanUsuarioResponse(
+    val status: String,
+    val plan: String,
+    val limite_procesamiento: Int
+)

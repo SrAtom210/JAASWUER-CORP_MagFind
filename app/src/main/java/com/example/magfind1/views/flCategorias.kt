@@ -1,7 +1,6 @@
 package com.example.magfind1.views
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +19,8 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,18 +38,18 @@ import androidx.navigation.NavController
 import com.example.magfind1.SessionManager
 import com.example.magfind1.apis.CategoriaRepository
 import com.example.magfind1.components.AdMobBanner
+import com.example.magfind1.components.ColorPicker
+import com.example.magfind1.components.fPlantilla
+import com.example.magfind1.components.parseColor
 import com.example.magfind1.models.CategoriaDto
 import com.example.magfind1.ui.theme.ThemeViewModel
-import com.example.magfind1.components.fPlantilla
 import com.example.magfind1.viewmodels.CategoriasViewModel
-import com.example.magfind1.components.ColorPicker
-import com.example.magfind1.components.parseColor
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel) {
-
+    // ViewModel y estados comunes
     val vm = remember { CategoriasViewModel() }
     val categorias by vm.categorias.collectAsState()
     val context = LocalContext.current
@@ -59,6 +60,10 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
     var editingCategoria by remember { mutableStateOf<CategoriaDto?>(null) }
     var deletingCategoria by remember { mutableStateOf<CategoriaDto?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+
+    // Mantener estado local de favoritos (por simplicidad; persistir en backend si hace falta)
+    // Inicializamos con false para cada categoría por id; si tu DTO tiene campo isFavorite úsalo.
+    val favoriteStates = remember { mutableStateMapOf<Int, Boolean>() }
 
     val sessionManager = SessionManager(context)
     val token = sessionManager.getToken() ?: ""
@@ -71,6 +76,7 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
         }
     }
 
+    // Plantilla principal (drawer, etc.)
     fPlantilla(
         title = "Categorías",
         navController = navController,
@@ -86,20 +92,18 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
     ) { padding ->
 
         Scaffold(
+            // Tomo lo mejor de ambas versiones: barra inferior con AdMob (si aplica)
             bottomBar = {
-                // Bloque condicional para futuro Plan Essential
-                if (true) {
-                    Column(Modifier.fillMaxWidth()) {
-                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color.White)
-                                .padding(vertical = 4.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            AdMobBanner()
-                        }
+                Column(Modifier.fillMaxWidth()) {
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AdMobBanner()
                     }
                 }
             },
@@ -110,7 +114,8 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                         showDialog = true
                     },
                     containerColor = Color(0xFF1976D2),
-                    modifier = Modifier.padding(bottom = if(true) 60.dp else 8.dp)
+                    // mantener padding más alto si hay bottomBar
+                    modifier = Modifier.padding(bottom = 60.dp)
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
                 }
@@ -151,24 +156,21 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                             contentPadding = PaddingValues(bottom = 16.dp)
                         ) {
                             items(categorias, key = { it.id_categoria }) { cat ->
-
-                                // 1. OBTENER EL COLOR DE FONDO
+                                // Obtener color (con fallback)
                                 val catColor = try {
                                     parseColor(cat.colorHex)
                                 } catch (e: Exception) {
                                     Color.Gray
                                 }
 
-                                // 2. CALCULAR COLOR DE TEXTO ADAPTATIVO (Blanco o Negro)
-                                // Si el brillo es alto (> 0.5), el fondo es claro -> texto negro.
-                                // Si el brillo es bajo (< 0.5), el fondo es oscuro -> texto blanco.
+                                // Texto adaptativo según luminancia
                                 val textColor = if (catColor.luminance() > 0.5f) Color.Black else Color.White
-                                val subTextColor = textColor.copy(alpha = 0.8f)
+                                val subTextColor = textColor.copy(alpha = 0.85f)
 
                                 val esSistema = cat.nombre.equals("Sin organizar", ignoreCase = true)
 
                                 if (esSistema) {
-                                    // --- TARJETA DE SISTEMA (Gris claro, texto gris oscuro) ---
+                                    // Tarjeta inmutable de sistema (sin swipe / sin favorito)
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -190,11 +192,13 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                                                     fontSize = 18.sp,
                                                     color = Color.Gray
                                                 )
-                                                Text(
-                                                    text = "Carpeta de sistema",
-                                                    fontSize = 12.sp,
-                                                    color = Color.Gray
-                                                )
+                                                if (!cat.regla.isNullOrBlank()) {
+                                                    Text(
+                                                        text = "Regla: ${cat.regla}",
+                                                        fontSize = 12.sp,
+                                                        color = Color.Gray
+                                                    )
+                                                }
                                             }
                                             Icon(
                                                 imageVector = Icons.Default.Lock,
@@ -204,49 +208,53 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                                         }
                                     }
                                 } else {
-                                    // --- TARJETA DE USUARIO (FONDO DE COLOR) ---
-                                    val dismissState = rememberDismissState(
-                                        confirmStateChange = {
-                                            if (it == DismissValue.DismissedToEnd) {
+                                    // Tarjeta de usuario: SwipeToDismiss con edición/eliminación
+                                    val dismissState = rememberDismissState { value ->
+                                        when (value) {
+                                            DismissValue.DismissedToEnd -> {
                                                 editingCategoria = cat
                                                 showDialog = true
                                                 false
-                                            } else if (it == DismissValue.DismissedToStart) {
+                                            }
+                                            DismissValue.DismissedToStart -> {
                                                 deletingCategoria = cat
                                                 showDeleteDialog = true
                                                 false
-                                            } else {
-                                                false
                                             }
+                                            else -> false
                                         }
-                                    )
+                                    }
 
                                     SwipeToDismiss(
                                         state = dismissState,
                                         directions = setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart),
                                         background = {
-                                            val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
-                                            val color = when (direction) {
-                                                DismissDirection.StartToEnd -> Color(0xFF4CAF50)
-                                                DismissDirection.EndToStart -> Color(0xFFE57373)
-                                            }
-                                            val alignment = when (direction) {
-                                                DismissDirection.StartToEnd -> Alignment.CenterStart
-                                                DismissDirection.EndToStart -> Alignment.CenterEnd
-                                            }
-                                            val icon = when (direction) {
-                                                DismissDirection.StartToEnd -> Icons.Default.Edit
-                                                DismissDirection.EndToStart -> Icons.Default.Delete
-                                            }
-
-                                            Box(
-                                                Modifier
-                                                    .fillMaxSize()
-                                                    .background(color, RoundedCornerShape(12.dp))
-                                                    .padding(horizontal = 20.dp),
-                                                contentAlignment = alignment
-                                            ) {
-                                                Icon(icon, contentDescription = null, tint = Color.White)
+                                            val direction = dismissState.dismissDirection
+                                            val progress = dismissState.progress.fraction
+                                            if (direction == null || progress <= 0.05f) {
+                                                Box(Modifier.fillMaxSize().background(Color.Transparent))
+                                            } else {
+                                                val color = when (direction) {
+                                                    DismissDirection.StartToEnd -> Color(0xFF4CAF50)
+                                                    DismissDirection.EndToStart -> Color(0xFFE57373)
+                                                }
+                                                val icon = when (direction) {
+                                                    DismissDirection.StartToEnd -> Icons.Default.Edit
+                                                    DismissDirection.EndToStart -> Icons.Default.Delete
+                                                }
+                                                val alignment = when (direction) {
+                                                    DismissDirection.StartToEnd -> Alignment.CenterStart
+                                                    DismissDirection.EndToStart -> Alignment.CenterEnd
+                                                }
+                                                Box(
+                                                    Modifier
+                                                        .fillMaxSize()
+                                                        .background(color.copy(alpha = progress.coerceIn(0.3f, 1f)), RoundedCornerShape(12.dp))
+                                                        .padding(horizontal = 20.dp),
+                                                    contentAlignment = alignment
+                                                ) {
+                                                    Icon(icon, contentDescription = null, tint = Color.White.copy(alpha = progress.coerceIn(0.5f, 1f)))
+                                                }
                                             }
                                         },
                                         dismissContent = {
@@ -256,7 +264,6 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                                                     .clickable {
                                                         Toast.makeText(context, "Ver correos de: ${cat.nombre}", Toast.LENGTH_SHORT).show()
                                                     },
-                                                // FONDO: Usamos el color de la categoría
                                                 colors = CardDefaults.cardColors(containerColor = catColor),
                                                 elevation = CardDefaults.cardElevation(4.dp)
                                             ) {
@@ -266,7 +273,6 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                                                     horizontalArrangement = Arrangement.SpaceBetween
                                                 ) {
                                                     Column(modifier = Modifier.weight(1f)) {
-                                                        // TEXTO: Usamos el color calculado (Blanco o Negro)
                                                         Text(
                                                             text = cat.nombre,
                                                             fontWeight = FontWeight.Bold,
@@ -282,12 +288,22 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                                                         }
                                                     }
 
-                                                    // FLECHA: También adaptativa
-                                                    Icon(
-                                                        imageVector = Icons.Default.ChevronRight,
-                                                        contentDescription = "Ver",
-                                                        tint = subTextColor
-                                                    )
+                                                    // ---------- ESTRELLA FAVORITO (REINTEGRADA EN LUGAR DE LA FLECHA) ----------
+                                                    // Usamos un estado por id en favoriteStates map para evitar recrear estados no persistidos.
+                                                    val isFav = favoriteStates[cat.id_categoria] ?: false
+                                                    IconButton(onClick = {
+                                                        val nuevo = !isFav
+                                                        favoriteStates[cat.id_categoria] = nuevo
+                                                        // TODO: persistir favorito en backend si tu DTO/endpoint lo soporta
+                                                        // Ej: vm.marcarFavorita(cat.id_categoria, nuevo)
+                                                    }) {
+                                                        Icon(
+                                                            imageVector = if (isFav) Icons.Default.Star else Icons.Default.StarBorder,
+                                                            contentDescription = "Favorito",
+                                                            tint = if (isFav) Color(0xFFFFD700) else subTextColor
+                                                        )
+                                                    }
+                                                    // --------------------------------------------------------------------------------
                                                 }
                                             }
                                         }
@@ -299,16 +315,21 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                 }
             }
 
-            // DIÁLOGO CREAR/EDITAR
+            // --------------------
+            // DIÁLOGO CREAR / EDITAR
+            // --------------------
             if (showDialog) {
                 Dialog(
                     onDismissRequest = { showDialog = false },
                     properties = DialogProperties(usePlatformDefaultWidth = false)
                 ) {
                     Card(
-                        modifier = Modifier.fillMaxWidth(0.9f).wrapContentHeight(),
+                        modifier = Modifier
+                            .fillMaxWidth(0.92f)
+                            .wrapContentHeight(),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(8.dp)
                     ) {
                         var nombre by remember { mutableStateOf(editingCategoria?.nombre ?: "") }
                         var regla by remember { mutableStateOf(editingCategoria?.regla ?: "") }
@@ -317,22 +338,34 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                         Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(
                                 text = if (editingCategoria == null) "Nueva Categoría" else "Editar Categoría",
-                                style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2)
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1976D2)
                             )
+
                             OutlinedTextField(
-                                value = nombre, onValueChange = { nombre = it },
-                                label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth(), singleLine = true
+                                value = nombre,
+                                onValueChange = { nombre = it },
+                                label = { Text("Nombre") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp)
                             )
+
                             OutlinedTextField(
-                                value = regla, onValueChange = { regla = it },
-                                label = { Text("Regla") }, modifier = Modifier.fillMaxWidth(), singleLine = true
+                                value = regla,
+                                onValueChange = { regla = it },
+                                label = { Text("Regla") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp)
                             )
 
                             Text("Color de la tarjeta:", fontWeight = FontWeight.Medium)
                             ColorPicker(selectedColorHex = selectedColor, onColorSelected = { selectedColor = it })
 
-                            // PREVIEW EN EL DIÁLOGO CON TEXTO ADAPTATIVO
-                            val previewColor = try { parseColor(selectedColor) } catch(e:Exception){ Color.Gray }
+                            // PREVIEW CON TEXTO ADAPTATIVO
+                            val previewColor = try { parseColor(selectedColor) } catch (e: Exception) { Color.Gray }
                             val previewTextColor = if (previewColor.luminance() > 0.5f) Color.Black else Color.White
 
                             Card(
@@ -340,38 +373,56 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                                 colors = CardDefaults.cardColors(containerColor = previewColor)
                             ) {
                                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Text(
-                                        "Así se verá el texto",
-                                        color = previewTextColor,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Text("Así se verá el texto", color = previewTextColor, fontWeight = FontWeight.Bold)
                                 }
                             }
 
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                                 TextButton(onClick = { showDialog = false }) { Text("Cancelar") }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Button(
                                     onClick = {
-                                        if (nombre.isBlank()) return@Button
+                                        if (nombre.isBlank()) {
+                                            Toast.makeText(context, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+                                            return@Button
+                                        }
                                         scope.launch {
-                                            val repo = CategoriaRepository()
-                                            if (editingCategoria == null) {
-                                                repo.agregarCategoria(token, nombre, regla, selectedColor)
-                                            } else {
-                                                repo.editarCategoria(token, editingCategoria!!.id_categoria, nombre, regla, selectedColor)
+                                            try {
+                                                val repo = CategoriaRepository()
+                                                if (editingCategoria == null) {
+                                                    repo.agregarCategoria(token, nombre, regla, selectedColor)
+                                                    Toast.makeText(context, "Categoría creada", Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    repo.editarCategoria(
+                                                        token,
+                                                        editingCategoria!!.id_categoria,
+                                                        nombre,
+                                                        regla,
+                                                        selectedColor
+                                                    )
+                                                    Toast.makeText(context, "Categoría actualizada", Toast.LENGTH_SHORT).show()
+                                                }
+                                                vm.cargarCategorias(token)
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Error al guardar", Toast.LENGTH_SHORT).show()
                                             }
-                                            vm.cargarCategorias(token)
                                             showDialog = false
                                         }
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
-                                ) { Text("Guardar") }
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text("Guardar")
+                                }
                             }
                         }
                     }
                 }
             }
 
+            // --------------------
+            // DIÁLOGO CONFIRMAR ELIMINACIÓN
+            // --------------------
             if (showDeleteDialog && deletingCategoria != null) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
@@ -381,16 +432,23 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                         Button(
                             onClick = {
                                 scope.launch {
-                                    val repo = CategoriaRepository()
-                                    repo.eliminarCategoria(token, deletingCategoria!!.id_categoria)
-                                    vm.cargarCategorias(token)
+                                    try {
+                                        val repo = CategoriaRepository()
+                                        repo.eliminarCategoria(token, deletingCategoria!!.id_categoria)
+                                        vm.cargarCategorias(token)
+                                        Toast.makeText(context, "Categoría eliminada", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Error al eliminar", Toast.LENGTH_SHORT).show()
+                                    }
                                     showDeleteDialog = false
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                         ) { Text("Eliminar") }
                     },
-                    dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") } }
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
+                    }
                 )
             }
         }

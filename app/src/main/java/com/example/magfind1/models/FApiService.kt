@@ -103,4 +103,12 @@ interface ApiService {
         @Path("token") token: String
     ): CorreoDetalleResponse
 
+    @GET("usuario/plan/{token}")
+    suspend fun obtenerPlanUsuario(@Path("token") token: String): PlanUsuarioResponse
+
+    @POST("clasificar/auto/{token}")
+    suspend fun triggerClasificacion(@Path("token") token: String): GenericResponse
+
+    @PUT("categoria/toggle-favorito/{id}/{token}")
+    suspend fun toggleFavorito(@Path("id") id: Int, @Path("token") token: String): GenericResponse
 }
