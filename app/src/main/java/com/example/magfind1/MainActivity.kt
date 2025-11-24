@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        MobileAds.initialize(this) {}
         // Cargar sesión si existe
         SessionManager.loadSession(this)
 
