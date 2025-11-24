@@ -140,7 +140,8 @@ data class PlanUsuarioResponse(
     val plan: String,
     val limite_total: Int,
     val usados_hoy: Int,
-    val restantes: Int
+    val restantes: Int,
+    val minutos_para_recarga: Int // <--- NUEVO
 )
 
 // Respuesta para la lista de Categorías
