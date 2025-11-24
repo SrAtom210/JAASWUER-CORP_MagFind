@@ -8,9 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,44 +39,48 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // --- CAMBIO DE LÓGICA ---
-    // val retrofit = RetrofitClient.retrofit // <--- BORRADO
-    // val correosApi = retrofit.create(FCorreosApi::class.java) // <--- BORRADO
-
-    // ¡ESTA ES LA LÍNEA CORRECTA!
-    // Usamos la instancia única de ApiService.
     val correosApi = RetrofitClient.instance
-    // ------------------------
 
     var categorias by remember { mutableStateOf<CategoriasResponse?>(null) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
-    // Token actual del usuario logueado
-    // (Asegúrate de que SessionManager.token se esté guardando como JWT)
+    // 🔐 SessionManager para token
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val token = sessionManager.getToken() ?: ""
 
-    // Llamada a la API
+    // 🔍 Variables del buscador estilo Gmail
+    var isSearching by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+
+    // 📡 Llamada a API
     LaunchedEffect(Unit) {
         try {
             if (token.isNotEmpty()) {
-                // Esta línea ahora funciona porque 'correosApi' es un 'ApiService'
-                // y 'ApiService' tiene la función 'obtenerCorreos'
                 categorias = correosApi.obtenerCorreos(token)
             } else {
                 errorMsg = "Token inválido. Inicia sesión nuevamente."
             }
         } catch (e: Exception) {
             errorMsg = "Error al cargar correos: ${e.message}"
-            e.printStackTrace() // Ayuda a ver el error real en Logcat
+            e.printStackTrace()
         }
     }
 
     fPlantilla(
         title = "Correos",
-        navController, themeViewModel = themeViewModel,
+        navController = navController,
+        themeViewModel = themeViewModel,
+
+        // Habilita el buscador estilo Gmail
+        searchEnabled = true,
+
+        //  Recibe el texto de búsqueda
+        onSearchQueryChange = { query ->
+            searchQuery = query
+        },
+
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
             "Ajustes" to { navController.navigate("Ajustes") },
@@ -84,19 +90,63 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
             "Suscripción" to { navController.navigate("Suscripcion") }
         )
     ) {
+
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text("MagFind", color = Color.White) },
+                    title = {
+                        // 🔍 CAMPO DE BÚSQUEDA EXPANDIBLE
+                        if (!isSearching) {
+                            Text("MagFind", color = Color.White)
+                        } else {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = { Text("Buscar correos...", color = Color.White) },
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color.White,
+                                    unfocusedBorderColor = Color.White,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White,
+                                    cursorColor = Color.White,
+                                    focusedLabelColor = Color.White
+                                ),
+                                trailingIcon = {
+                                    IconButton(onClick = {
+                                        searchQuery = ""
+                                        isSearching = false
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Cerrar búsqueda",
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Abrir menú", tint = Color.White)
+                        if (!isSearching) {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = Color.White)
+                            }
+                        }
+                    },
+                    actions = {
+                        if (!isSearching) {
+                            IconButton(onClick = { isSearching = true }) {
+                                Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.White)
+                            }
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xFF1976D2))
                 )
             }
         ) { innerPadding ->
+
             when {
                 errorMsg != null -> Text(
                     text = errorMsg!!,
@@ -111,41 +161,64 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
                     CircularProgressIndicator(color = Color(0xFF1976D2))
                 }
 
-                else -> LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                ) {
-                    categorias!!.forEach { (categoria, correos) ->
-                        item {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        expandedStates[categoria] = !(expandedStates[categoria] ?: false)
-                                    }
-                                    .padding(vertical = 12.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (expandedStates[categoria] == true)
-                                        Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = Color(0xFF1976D2)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = categoria,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1976D2)
-                                )
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .padding(horizontal = 20.dp, vertical = 10.dp)
+                    ) {
+
+                        categorias!!.forEach { (categoria, correosOriginales) ->
+
+                            // 🔍 FILTRO DE BÚSQUEDA
+                            val correosFiltrados = correosOriginales.filter { correo ->
+                                val q = searchQuery.lowercase()
+
+                                q.isEmpty() ||
+                                        categoria.lowercase().contains(q) ||
+                                        correo.remitente.lowercase().contains(q) ||
+                                        correo.asunto.lowercase().contains(q) ||
+                                        correo.descripcion.lowercase().contains(q)
                             }
-                            AnimatedVisibility(visible = expandedStates[categoria] == true) {
-                                Column {
-                                    correos.forEach { correo ->
-                                        fCorreoCard(correo)
+
+                            if (correosFiltrados.isEmpty()) return@forEach
+
+                            // 🟦 CABECERA DE CATEGORÍA
+                            item {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            expandedStates[categoria] =
+                                                !(expandedStates[categoria] ?: false)
+                                        }
+                                        .padding(vertical = 12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (expandedStates[categoria] == true)
+                                            Icons.Filled.KeyboardArrowDown
+                                        else Icons.Filled.KeyboardArrowRight,
+                                        contentDescription = null,
+                                        tint = Color(0xFF1976D2)
+                                    )
+
+                                    Spacer(modifier = Modifier.width(4.dp))
+
+                                    Text(
+                                        text = categoria,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1976D2)
+                                    )
+                                }
+
+                                AnimatedVisibility(visible = expandedStates[categoria] == true) {
+                                    Column {
+                                        correosFiltrados.forEach { correo ->
+                                            fCorreoCard(correo)
+                                        }
                                     }
                                 }
                             }
@@ -156,7 +229,6 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
         }
     }
 }
-
 @Composable
 fun fCorreoCard(correo: cCorreo) {
     Card(
@@ -191,5 +263,3 @@ fun fCorreoCard(correo: cCorreo) {
         }
     }
 }
-
-

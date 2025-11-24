@@ -98,4 +98,10 @@ interface ApiService {
     ): GenericResponse
 
 
+    //stripe para pagos
+    @POST("/subscription/create-setup-intent")
+    suspend fun createSetupIntent(@Body body: Map<String, String>): SetupIntentResponse
+
+    @POST("/subscription/create-subscription")
+    suspend fun createSubscription(@Body body: Map<String, String>): SubscriptionResponse
 }

@@ -120,5 +120,6 @@ dependencies {
     //anuncios
     implementation("com.google.android.gms:play-services-ads:23.0.0")
 
-
+    //Stripe {pagos}
+    implementation("com.stripe:stripe-android:20.48.0")
 }

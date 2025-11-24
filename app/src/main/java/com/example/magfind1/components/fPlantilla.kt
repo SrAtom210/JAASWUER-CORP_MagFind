@@ -38,6 +38,8 @@ fun fPlantilla(
     navController: NavController,
     themeViewModel: ThemeViewModel,
     showProfileMenu: Boolean = true,
+    searchEnabled: Boolean = false,               // 🆕 Habilita buscador
+    onSearchQueryChange: (String) -> Unit = {},   // 🆕 Callback de búsqueda
     drawerItems: List<Pair<String, () -> Unit>> = emptyList(),
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -56,6 +58,10 @@ fun fPlantilla(
     val currentEmail = session.getEmail()
     val currentPlan = session.getPlan()?.replaceFirstChar { it.uppercase() }
 
+    // Estado del buscador
+    var isSearching by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -68,7 +74,8 @@ fun fPlantilla(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // HEADER
+
+                    // Drawer header...
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -94,7 +101,6 @@ fun fPlantilla(
                                 modifier = Modifier.size(60.dp)
                             )
                         }
-
 
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -167,7 +173,6 @@ fun fPlantilla(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // LOGOUT
                     TextButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -194,16 +199,59 @@ fun fPlantilla(
             }
         }
     ) {
+
+        // 🆕 TOPBAR CON BUSCADOR INTEGRADO
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text(title, color = Color.White) },
+                    title = {
+                        if (isSearching && searchEnabled) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = {
+                                    searchQuery = it
+                                    onSearchQueryChange(it)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = { Text("Buscar…", color = Color.White) },
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color.White,
+                                    unfocusedBorderColor = Color.White,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White,
+                                    cursorColor = Color.White
+                                ),
+                                trailingIcon = {
+                                    IconButton(onClick = {
+                                        searchQuery = ""
+                                        isSearching = false
+                                        onSearchQueryChange("")
+                                    }) {
+                                        Icon(Icons.Default.Close, tint = Color.White, contentDescription = "Cerrar")
+                                    }
+                                }
+                            )
+                        } else {
+                            Text(title, color = Color.White)
+                        }
+                    },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                        if (!isSearching) {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                            }
                         }
                     },
                     actions = {
+                        if (searchEnabled) {
+                            if (!isSearching) {
+                                IconButton(onClick = { isSearching = true }) {
+                                    Icon(Icons.Default.Search, tint = Color.White, contentDescription = "Buscar")
+                                }
+                            }
+                        }
+
                         if (showProfileMenu) {
                             GoogleStyleProfileMenu(
                                 navController = navController,
@@ -224,6 +272,7 @@ fun fPlantilla(
         }
     }
 }
+
 
 @Composable
 fun fDrawerItem(

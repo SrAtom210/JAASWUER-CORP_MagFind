@@ -66,7 +66,7 @@ data class CategoriaDto(
 
 )
 
-// Para agregar/editar categoría
+// El objeto para ENVIAR datos (Lo que mandas al Crear/Editar)
 data class CategoriaPersonalizadaIn(
     val nombre: String,
     val regla: String?,
@@ -112,4 +112,16 @@ data class DCGmailConnectRequest(
 data class EditarPerfilRequest(
     val nombre: String,
     val foto: String   // Base64
+)
+
+//stripe
+data class SubscriptionResponse(
+    val free: Boolean,
+    val subscription_id: String?,
+    val status: String
+)
+
+data class SetupIntentResponse(
+    val client_secret: String,
+    val customer_id: String
 )
