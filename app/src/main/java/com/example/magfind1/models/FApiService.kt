@@ -111,4 +111,14 @@ interface ApiService {
 
     @PUT("categoria/toggle-favorito/{id}/{token}")
     suspend fun toggleFavorito(@Path("id") id: Int, @Path("token") token: String): GenericResponse
+
+    // 4. Listar Categorías (Ordenadas por prioridad)
+    @GET("categoria/listar/{token}")
+    suspend fun listarCategorias(@Path("token") token: String): CategoriasListResponse
+
+    @GET("correos/categoria/{id_cat}/{token}")
+    suspend fun obtenerCorreosPorCategoria(
+        @Path("id_cat") idCategoria: Int,
+        @Path("token") token: String
+    ): CorreosListResponse
 }

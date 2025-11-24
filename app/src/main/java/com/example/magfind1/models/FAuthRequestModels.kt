@@ -64,7 +64,7 @@ data class CategoriaDto(
     @SerializedName("id_usuario") val id_usuario: Int,
     @SerializedName("nombre") val nombre: String,
     @SerializedName("regla") val regla: String? = "",
-
+    val prioridad: Int,
     // TRADUCCIÓN CLAVE: API envía "color_hex", Kotlin usa "colorHex"
     @SerializedName("color_hex") val colorHex: String? = "#1976D2",
 
@@ -134,9 +134,39 @@ data class CorreoDetalleResponse(
     val cuerpo_completo: String,
     val fecha: String
 )
-
+// Respuesta para el Plan y Cuotas
 data class PlanUsuarioResponse(
     val status: String,
     val plan: String,
-    val limite_procesamiento: Int
+    val limite_total: Int,
+    val usados_hoy: Int,
+    val restantes: Int
+)
+
+// Respuesta para la lista de Categorías
+data class CategoriasListResponse(
+    val status: String,
+    val categorias: List<CategoriaItem>
+)
+
+// Item individual de categoría
+data class CategoriaItem(
+    val id_categoria: Int,
+    val nombre: String,
+    val regla: String,
+    val color_hex: String,
+    val prioridad: Int // 1 = Normal, 2 = Favorito
+)
+
+data class CorreosListResponse(
+    val status: String,
+    val correos: List<CorreoItemDto>
+)
+
+data class CorreoItemDto(
+    val id: Int,
+    val remitente: String,
+    val asunto: String,
+    val descripcion: String,
+    val fecha: String
 )
