@@ -8,6 +8,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Timer // <--- Nuevo Import
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,8 +24,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.magfind1.RetrofitClient
 import com.example.magfind1.SessionManager
 import com.example.magfind1.components.fPlantilla
+import com.example.magfind1.models.PlanUsuarioResponse
 import com.example.magfind1.ui.theme.ThemeViewModel
 import com.example.magfind1.viewmodels.CuentaViewModel
 
@@ -37,13 +41,24 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
     val error = cuentaVM.error.value
     val loading = cuentaVM.loading.value
 
+    // Estado local para estadísticas del plan
+    var planStats by remember { mutableStateOf<PlanUsuarioResponse?>(null) }
+
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val token = sessionManager.getToken()
 
     // Cargar info al iniciar
     LaunchedEffect(Unit) {
-        cuentaVM.cargarCuenta(token)
+        if (token != null) {
+            cuentaVM.cargarCuenta(token)
+            // Cargar estadísticas de IA en paralelo (silencioso)
+            try {
+                planStats = RetrofitClient.instance.obtenerPlanUsuario(token)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     var showEditPopup by remember { mutableStateOf(false) }
@@ -102,6 +117,10 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                 val photoUrl = sessionManager.getProfilePhoto() ?: cuenta.foto
 
 
+                // Normalizamos el plan para la lógica de fechas
+                val planActual = cuenta.tipo_suscripcion ?: "Essential"
+                val planLower = planActual.lowercase()
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -111,7 +130,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                     verticalArrangement = Arrangement.Top
                 ) {
 
-                    // FOTO
+                    // --- FOTO DE PERFIL ---
                     Box(
                         modifier = Modifier
                             .size(120.dp)
@@ -123,9 +142,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                             AsyncImage(
                                 model = photoUrl,
                                 contentDescription = "Foto de perfil",
-                                modifier = Modifier
-                                    .size(120.dp)
-                                    .clip(CircleShape)
+                                modifier = Modifier.size(120.dp).clip(CircleShape)
                             )
                         } else {
                             Text(
@@ -154,6 +171,13 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                     Spacer(modifier = Modifier.height(30.dp))
 
+                    // --- NUEVA CARD DE ESTADÍSTICAS DE IA CON TIMER ---
+                    if (planStats != null) {
+                        PlanStatsCard(planStats!!)
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+                    // ----------------------------------------
+
                     // Detalles de la cuenta
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -163,10 +187,16 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text("Detalles de la cuenta", fontWeight = FontWeight.Bold, color = Color(0xFF0D47A1))
                             Spacer(modifier = Modifier.height(8.dp))
-                            fInfoRow("Plan actual", cuenta.tipo_suscripcion ?: "Sin plan")
+
+                            fInfoRow("Plan actual", planActual.replaceFirstChar { it.uppercase() })
                             fInfoRow("Fecha de registro", cuenta.fecha_registro.take(10))
-                            fInfoRow("Inicio del plan", cuenta.fecha_inicio ?: "-")
-                            fInfoRow("Fin del plan", cuenta.fecha_fin ?: "-")
+
+                            // --- LÓGICA PARA MOSTRAR/OCULTAR FECHAS ---
+                            // Si NO es Essential y NO es Admin, mostramos las fechas
+                            if (planLower != "essential" && planLower != "admin") {
+                                fInfoRow("Inicio del plan", cuenta.fecha_inicio ?: "-")
+                                fInfoRow("Fin del plan", cuenta.fecha_fin ?: "-")
+                            }
                         }
                     }
 
@@ -195,6 +225,10 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                                         cuentaVM.cargarCuenta(token)
                                         Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
                                     }else {
+                                        Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+                                        showEditPopup = false
+                                        cuentaVM.cargarCuenta(token!!)
+                                    } else {
                                         Toast.makeText(context, "Error al actualizar", Toast.LENGTH_SHORT).show()
                                     }
                                 }
@@ -208,6 +242,91 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
     }
 }
 
+// --- COMPONENTES AUXILIARES ---
+
+@Composable
+fun PlanStatsCard(info: PlanUsuarioResponse) {
+    val limit = if (info.limite_total > 0) info.limite_total else 1
+
+    // CÁLCULO ROBUSTO EN FRONTEND:
+    val restantesReales = if (info.restantes == 0 && info.usados_hoy < info.limite_total) {
+        info.limite_total - info.usados_hoy
+    } else {
+        info.restantes
+    }
+
+    val progress = info.usados_hoy.toFloat() / limit.toFloat()
+    val isLimitReached = restantesReales <= 0
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Cuota Diaria de IA", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+                Text(
+                    text = "${info.usados_hoy} / ${info.limite_total}",
+                    fontWeight = FontWeight.Bold,
+                    color = if (isLimitReached) Color.Red else Color(0xFF2E7D32)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LinearProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f) },
+                modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                color = if (isLimitReached) Color.Red else Color(0xFF2E7D32),
+                trackColor = Color(0xFFE0E0E0),
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // --- TEXTO INFORMATIVO CON TIMER ---
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Si hay uso y el backend mandó tiempo de espera
+                if (info.usados_hoy > 0 && info.minutos_para_recarga > 0) {
+                    Icon(Icons.Default.Timer, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Próxima recarga en: ${formatMinutesToTime(info.minutos_para_recarga)}",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium
+                    )
+                } else if (isLimitReached) {
+                    // Límite alcanzado pero sin tiempo específico (raro, pero posible)
+                    Text(
+                        text = "Límite diario alcanzado.",
+                        fontSize = 12.sp,
+                        color = Color.Red
+                    )
+                } else {
+                    // Aún hay cupo y no hay bloqueo inminente
+                    Text(
+                        text = "Te quedan $restantesReales clasificaciones hoy.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF2E7D32)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// Helper para formatear minutos a "Xh Ym"
+fun formatMinutesToTime(minutes: Int): String {
+    val h = minutes / 60
+    val m = minutes % 60
+    return if (h > 0) "${h}h ${m}m" else "${m}m"
+}
 
 @Composable
 fun fInfoRow(label: String, value: String) {
@@ -292,3 +411,5 @@ fun EditProfilePopup(
         }
     }
 }
+}
+

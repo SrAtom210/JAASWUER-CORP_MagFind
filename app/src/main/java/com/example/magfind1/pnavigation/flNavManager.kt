@@ -45,6 +45,17 @@ fun NavManager(themeViewModel: ThemeViewModel) {
             CategoriasView(navController, themeViewModel)
         }
 
+        composable(
+            route = "DetalleCorreo/{emailId}",
+            arguments = listOf(navArgument("emailId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            // Extraemos el ID de la URL
+            val emailId = backStackEntry.arguments?.getInt("emailId") ?: 0
+
+            // Llamamos a la nueva vista
+            fDetalleCorreoView(navController, emailId, themeViewModel)
+        }
+
         composable("CorreosCat") {
             fCorreosCategorizadosView(navController, themeViewModel)
         }
@@ -105,5 +116,17 @@ fun NavManager(themeViewModel: ThemeViewModel) {
         }
 
 
+            route = "CorreosCategoria/{id}/{nombre}",
+            arguments = listOf(
+                navArgument("id") { type = NavType.IntType },
+                navArgument("nombre") { type = NavType.StringType }
+            )
+        ) { entry ->
+            val id = entry.arguments?.getInt("id") ?: 0
+            val nombre = entry.arguments?.getString("nombre") ?: "Categoría"
+
+            // ACTUALIZADO: Pasamos themeViewModel
+            fCorreosPorCategoriaView(navController, themeViewModel, id, nombre)
+        }
     }
 }
