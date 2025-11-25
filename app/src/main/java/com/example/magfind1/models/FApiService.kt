@@ -103,6 +103,12 @@ interface ApiService {
         @Path("token") token: String
     ): CorreoDetalleResponse
 
+    //stripe para pagos
+    @POST("/subscription/create-setup-intent")
+    suspend fun createSetupIntent(@Body body: Map<String, String>): SetupIntentResponse
+
+    @POST("/subscription/create-subscription")
+    suspend fun createSubscription(@Body body: Map<String, String>): SubscriptionResponse
     @GET("usuario/plan/{token}")
     suspend fun obtenerPlanUsuario(@Path("token") token: String): PlanUsuarioResponse
 

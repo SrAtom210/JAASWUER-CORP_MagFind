@@ -119,6 +119,16 @@ data class EditarPerfilRequest(
     val foto: String   // Base64
 )
 
+//stripe
+data class SubscriptionResponse(
+    val free: Boolean,
+    val subscription_id: String?,
+    val status: String
+)
+
+data class SetupIntentResponse(
+    val client_secret: String,
+    val customer_id: String
 data class Correo(
     @SerializedName("id") val id: Int,
     @SerializedName("remitente") val remitente: String,

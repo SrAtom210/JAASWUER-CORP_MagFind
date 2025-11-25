@@ -17,16 +17,16 @@ import com.example.magfind1.views.*
 fun NavManager(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
 
-    // ⬅️ Cargar SessionManager
+    //  Cargar SessionManager
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
 
-    // ⬅️ Detectar si hay sesión guardada
+    // Detectar si hay sesión guardada
     val startRoute = if (sessionManager.isLoggedIn()) "Home" else "Login"
 
     NavHost(
         navController = navController,
-        startDestination = startRoute   // ⬅️ ESTA ES LA SOLUCIÓN
+        startDestination = startRoute   // ESTA ES LA SOLUCIÓN
     ) {
 
         composable("Login") {
@@ -96,6 +96,26 @@ fun NavManager(themeViewModel: ThemeViewModel) {
         }
 
         composable(
+            route = "StripeSetup/{clientSecret}/{customerId}/{plan}",
+            arguments = listOf(
+                navArgument("clientSecret") { type = NavType.StringType },
+                navArgument("customerId") { type = NavType.StringType },
+                navArgument("plan") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val secret = backStackEntry.arguments?.getString("clientSecret")!!
+            val customerId = backStackEntry.arguments?.getString("customerId")!!
+            val plan = backStackEntry.arguments?.getString("plan")!!
+
+            StripeSetupView(
+                navController = navController,
+                clientSecret = secret,
+                customerId = customerId,
+                plan = plan
+            )
+        }
+
+
             route = "CorreosCategoria/{id}/{nombre}",
             arguments = listOf(
                 navArgument("id") { type = NavType.IntType },
