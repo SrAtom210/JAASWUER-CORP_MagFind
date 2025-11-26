@@ -129,6 +129,8 @@ data class SubscriptionResponse(
 data class SetupIntentResponse(
     val client_secret: String,
     val customer_id: String
+)
+
 data class Correo(
     @SerializedName("id") val id: Int,
     @SerializedName("remitente") val remitente: String,
@@ -180,4 +182,22 @@ data class CorreoItemDto(
     val asunto: String,
     val descripcion: String,
     val fecha: String
+)
+
+data class recentActivity(
+    val id: Int,
+    val remitente: String,
+    val asunto: String,
+    val categoria: String, // El nombre (ej. "Trabajo")
+    val colorHex: String,  // El color que sacaremos de la otra lista
+    val fecha: String
+)
+
+data class DashboardData(
+    val unorganizedCount: Int,
+    val aiUsed: Int,
+    val aiLimit: Int,
+    val favoriteCategories: List<CategoriaDto>,
+
+    val recentActivityList: List<recentActivity>
 )

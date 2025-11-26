@@ -224,7 +224,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                                         sessionManager.saveProfile(newName, newPhoto)  // ← GUARDA TODO
                                         cuentaVM.cargarCuenta(token)
                                         Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
-                                    }else {
+                                    }else if (ok == false) {
                                         Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
                                         showEditPopup = false
                                         cuentaVM.cargarCuenta(token!!)
@@ -411,5 +411,5 @@ fun EditProfilePopup(
         }
     }
 }
-}
+
 

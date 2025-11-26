@@ -71,7 +71,7 @@ fun StripeSetupView(
             allowsDelayedPaymentMethods = true
         )
 
-        try {
+        /*try {
             // CON STRIPE 20.48.0 ESTA LÍNEA DEBE FUNCIONAR:
             // Se usa el método estático createSetupIntent
             val args = PaymentSheetContract.Args.createSetupIntent(
@@ -84,7 +84,7 @@ fun StripeSetupView(
             isLoading = false
             statusMessage = "Error al iniciar Stripe: ${e.message}"
             e.printStackTrace()
-        }
+        }*/
     }
 
     // --- UI ---

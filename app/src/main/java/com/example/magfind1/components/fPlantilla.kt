@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -38,8 +37,8 @@ fun fPlantilla(
     navController: NavController,
     themeViewModel: ThemeViewModel,
     showProfileMenu: Boolean = true,
-    searchEnabled: Boolean = false,               // 🆕 Habilita buscador
-    onSearchQueryChange: (String) -> Unit = {},   // 🆕 Callback de búsqueda
+    searchEnabled: Boolean = false,
+    onSearchQueryChange: (String) -> Unit = {},
     drawerItems: List<Pair<String, () -> Unit>> = emptyList(),
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -165,13 +164,24 @@ fun fPlantilla(
                     Spacer(modifier = Modifier.height(30.dp))
 
                     // --- ANUNCIO REAL ---
-                    AdMobBanner(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    )
+                    val userPlan = session.getPlan()?.trim()?.lowercase() ?: "essential"
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    // 2. Condicional: Solo mostrar si es 'essential'
+                    if (userPlan == "essential") {
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                        // --- ANUNCIO REAL ---
+                        AdMobBanner(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    } else {
+                        // Si paga (Plus/Business), solo dejamos un espacio pequeño estético
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
                     TextButton(
                         modifier = Modifier

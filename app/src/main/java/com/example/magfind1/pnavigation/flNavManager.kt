@@ -115,7 +115,7 @@ fun NavManager(themeViewModel: ThemeViewModel) {
             )
         }
 
-
+        composable(
             route = "CorreosCategoria/{id}/{nombre}",
             arguments = listOf(
                 navArgument("id") { type = NavType.IntType },
