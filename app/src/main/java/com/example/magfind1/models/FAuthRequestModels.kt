@@ -16,7 +16,8 @@ data class RegisterRequest(
 
 data class GenericResponse(
     val status: String,
-    val message: String
+    val message: String,
+    val count: Int? = 0
 )
 
 data class LoginRequest(

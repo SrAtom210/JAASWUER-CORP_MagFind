@@ -83,6 +83,10 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
         }
     }
 
+    LaunchedEffect(Unit, categorias) {
+        vm.checkQuota(token)
+    }
+
     // Plantilla principal (drawer, etc.)
     fPlantilla(
         title = "Categorías",
@@ -129,48 +133,71 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                 }
             },
             floatingActionButton = {
+                val canOrganize by vm.canOrganize.collectAsState()
+
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.padding(bottom = 8.dp) // Ajuste para no tapar con AdMob
                 ) {
                     // --- 1. NUEVO BOTÓN: ORGANIZAR CON IA ---
-                    ExtendedFloatingActionButton(
-                        onClick = {
-                            if (!isOrganizing) {
-                                isOrganizing = true
-                                scope.launch {
-                                    try {
-                                        val res = RetrofitClient.instance.triggerClasificacion(token)
-                                        snackbarHostState.showSnackbar(res.message)
-                                        // Recargamos categorías por si algo se movió
-                                        vm.cargarCategorias(token)
-                                    } catch (e: HttpException) {
-                                        if (e.code() == 429) {
-                                            snackbarHostState.showSnackbar("⏳ Enfriamiento activo. Espera unos minutos.")
-                                        } else {
-                                            snackbarHostState.showSnackbar("Error del servidor.")
+                    if (canOrganize) {
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                if (!isOrganizing) {
+                                    isOrganizing = true
+                                    scope.launch {
+                                        try {
+                                            // 1. Llamada al backend síncrona
+                                            val res = RetrofitClient.instance.triggerClasificacion(token)
+
+                                            // 2. Cálculo de tokens usados (1 correo = 1 token)
+                                            val cantidad = res.count ?: 0
+
+                                            // 3. MENSAJE EXACTO QUE PEDISTE
+                                            val mensaje = "Se han consumido $cantidad tokens\nSe clasificaron $cantidad correos"
+                                            Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show()
+
+                                            // 4. Recargamos todo
+                                            vm.cargarCategorias(token)
+
+                                            // 5. ESTO ES LO QUE HACE QUE DESAPAREZCA EL BOTÓN
+                                            // Al checar cuota, si es 0, 'canOrganize' cambia a false y el IF de arriba lo oculta.
+                                            vm.checkQuota(token)
+
+                                        } catch (e: HttpException) {
+                                            if (e.code() == 429) {
+                                                Toast.makeText(context, "⏳ La IA está descansando. Espera 15 min.", Toast.LENGTH_LONG).show()
+                                            } else {
+                                                Toast.makeText(context, "Error del servidor: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show()
+                                        } finally {
+                                            isOrganizing = false
                                         }
-                                    } catch (e: Exception) {
-                                        snackbarHostState.showSnackbar("Error de conexión.")
-                                    } finally {
-                                        isOrganizing = false
                                     }
                                 }
+                            },
+                            // Cambia de color si está trabajando
+                            containerColor = if (isOrganizing) Color.Gray else Color(0xFF2E7D32),
+                            contentColor = Color.White,
+                            icon = {
+                                if (isOrganizing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Icon(Icons.Default.AutoAwesome, null)
+                                }
+                            },
+                            text = {
+                                Text(if (isOrganizing) "Organizando en segundo plano..." else "Organizar")
                             }
-                        },
-                        containerColor = if (isOrganizing) Color.Gray else Color(0xFF2E7D32),
-                        contentColor = Color.White,
-                        icon = {
-                            if (isOrganizing) CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Color.White
-                            )
-                            else Icon(Icons.Default.AutoAwesome, null)
-                        },
-                        text = { Text(if (isOrganizing) "Procesando..." else "Organizar") }
-                    )
-
+                        )
+                    }
                     // --- 2. BOTÓN ORIGINAL: AGREGAR ---
                     FloatingActionButton(
                         onClick = {
