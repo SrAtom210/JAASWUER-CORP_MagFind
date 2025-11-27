@@ -55,7 +55,7 @@ fun StripePremiumSetupView(
             errorMessage = e.localizedMessage ?: "Error desconocido"
             isLoading = false
             e.printStackTrace()
-        }
+        }*/
     }
 
     // UI PREMIUM

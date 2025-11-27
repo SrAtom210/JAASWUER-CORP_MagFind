@@ -183,7 +183,18 @@ fun fPlantilla(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                        // --- ANUNCIO REAL ---
+                        AdMobBanner(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    } else {
+                        // Si paga (Plus/Business), solo dejamos un espacio pequeño estético
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
                     // --- BOTÓN CERRAR SESIÓN ---
                     TextButton(
