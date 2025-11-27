@@ -84,6 +84,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
             "Suscripción" to { navController.navigate("Suscripcion") },
             "Ajustes" to { navController.navigate("Ajustes") },
+            "Ayuda" to { navController.navigate("Ayuda") }
         )
     ) { innerPadding ->
 

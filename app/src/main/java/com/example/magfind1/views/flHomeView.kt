@@ -34,14 +34,12 @@ import com.example.magfind1.SessionManager
 import com.example.magfind1.components.fPlantilla
 import com.example.magfind1.ui.theme.ThemeViewModel
 import com.example.magfind1.viewmodels.FHomeViewModel
-
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.platform.LocalLifecycleOwner
 
-
-// Helper para convertir el Hex String (#FF0000) de la DB a Color de Compose
+// Helper para convertir Hex string a Color Compose
 fun parseHexColor(hex: String?): Color {
     return try {
         if (hex.isNullOrEmpty()) Color.Gray
@@ -60,32 +58,26 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
         FHomeViewModel(sessionManager = session)
     }
 
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
-        // Creamos un observador que espere al evento ON_RESUME
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                // ¡AQUÍ ES! La pantalla volvió a ser visible -> Recargamos
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
                 homeViewModel.refreshData()
             }
         }
 
-        // Conectamos el observador
         lifecycleOwner.lifecycle.addObserver(observer)
 
-        // Limpieza cuando la vista muere
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
-
-    val state by homeViewModel.uiState.collectAsState()
+    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
     val nombreUsuario = session.getDisplayName() ?: "Usuario"
 
-    val lightBlueBg = Color(0xFFF5F9FF)
-    val primaryBlue = Color(0xFF1976D2)
+    val colorScheme = MaterialTheme.colorScheme
 
     fPlantilla(
         title = "Inicio",
@@ -98,53 +90,64 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
             "Suscripción" to { navController.navigate("Suscripcion") },
             "Ajustes" to { navController.navigate("Ajustes") },
+            "Ayuda" to { navController.navigate("Ayuda") }
         )
     ) { padding ->
 
         if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = colorScheme.primary)
             }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(lightBlueBg)
+                    .background(colorScheme.background)
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // 1. BIENVENIDA
+
+                // BIENVENIDA
                 Column {
                     Text(
                         text = "Hola, $nombreUsuario 👋",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF202124)
+                        color = colorScheme.onBackground
                     )
                     Text(
                         text = "Aquí tienes el resumen de hoy.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = colorScheme.onSurfaceVariant
                     )
                 }
 
-                // 2. CARD PRINCIPAL
+                // CARD PRINCIPAL
                 StatusCard(
                     count = state.unorganizedCount,
                     label = "Correos sin organizar",
                     subLabel = if (state.unorganizedCount > 0) "Toca para limpiar" else "¡Todo limpio!",
                     icon = Icons.Outlined.MarkEmailUnread,
-                    colorStart = Color(0xFF2196F3),
-                    colorEnd = Color(0xFF64B5F6),
+                    colorStart = colorScheme.primary,
+                    colorEnd = colorScheme.primaryContainer,
                     onClick = { navController.navigate("CorreosCat") }
                 )
 
-                // 3. FAVORITOS
+                // FAVORITOS
                 if (state.favorites.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        SectionHeader("Accesos Rápidos", Icons.Rounded.Star, primaryBlue)
+                        SectionHeader(
+                            "Accesos Rápidos",
+                            Icons.Rounded.Star,
+                            colorScheme.primary
+                        )
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -153,45 +156,49 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
                                 FavoriteCategoryCard(
                                     name = cat.nombre,
                                     color = parseHexColor(cat.colorHex),
-                                    onClick = { navController.navigate("CorreosCategoria/${cat.id_categoria}/${cat.nombre}") }
+                                    onClick = {
+                                        navController.navigate(
+                                            "CorreosCategoria/${cat.id_categoria}/${cat.nombre}"
+                                        )
+                                    }
                                 )
                             }
                         }
                     }
                 }
 
-                // 4. USO DE IA
+                // USO DE IA
                 UsageCard(
                     used = state.aiUsed,
                     limit = state.aiLimit,
-                    primaryColor = primaryBlue,
+                    primaryColor = colorScheme.primary,
                     onClick = { navController.navigate("Suscripcion") }
                 )
 
-                // 5. ACTIVIDAD RECIENTE (CORREGIDO: SIN DUPLICADOS)
+                // ACTIVIDAD RECIENTE
                 if (state.recentActivityList.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp)) // Ajuste visual
 
-                    // Cabecera
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        SectionHeader("Actividad Reciente", Icons.Default.History, Color(0xFF546E7A))
-
+                        SectionHeader(
+                            "Actividad Reciente",
+                            Icons.Default.History,
+                            colorScheme.primary
+                        )
                         TextButton(onClick = { navController.navigate("CorreosCat") }) {
-                            Text("Ver todo", fontSize = 13.sp, color = primaryBlue)
+                            Text("Ver todo", fontSize = 13.sp, color = colorScheme.primary)
                         }
                     }
+
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-
-                            // Iteramos DIRECTAMENTE aquí, sin otro IF ni otra CARD
                             state.recentActivityList.forEachIndexed { index, correo ->
 
                                 RecentEmailItem(
@@ -205,10 +212,9 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
                                     }
                                 )
 
-                                // Divisor
                                 if (index < state.recentActivityList.size - 1) {
                                     HorizontalDivider(
-                                        color = Color(0xFFEEEEEE),
+                                        color = colorScheme.outlineVariant.copy(alpha = 0.4f),
                                         thickness = 1.dp
                                     )
                                 }
@@ -217,9 +223,8 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
                     }
                 }
 
-                // 6. BANNER
+                // BANNER PROMO
                 val plan = session.getPlan()?.lowercase()?.trim()
-                // Lógica corregida: Si NO es admin Y NO es business
                 if (plan != "admin" && plan != "business") {
                     PromoBanner(
                         title = "¿Necesitas más potencia?",
@@ -228,17 +233,19 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
                     )
                 }
 
-                // Espacio final para que no se corte el scroll
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
 }
 
-// --- COMPONENTES VISUALES ---
+
+// -------------------- COMPONENTES --------------------
 
 @Composable
 fun SectionHeader(title: String, icon: ImageVector, tint: Color) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(8.dp))
@@ -246,7 +253,7 @@ fun SectionHeader(title: String, icon: ImageVector, tint: Color) {
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF37474F)
+            color = colorScheme.onBackground
         )
     }
 }
@@ -255,7 +262,7 @@ fun SectionHeader(title: String, icon: ImageVector, tint: Color) {
 fun StatusCard(
     count: Int,
     label: String,
-    subLabel: String, // <--- Ahora sí lo vamos a usar
+    subLabel: String,
     icon: ImageVector,
     colorStart: Color,
     colorEnd: Color,
@@ -266,7 +273,7 @@ fun StatusCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(170.dp) // Altura aumentada
+            .height(170.dp)
             .clickable { onClick() }
     ) {
         Box(
@@ -277,43 +284,33 @@ fun StatusCard(
         ) {
             Column(
                 modifier = Modifier.align(Alignment.TopStart),
-                verticalArrangement = Arrangement.spacedBy(6.dp) // Espacio equilibrado
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.size(32.dp)
-                )
+                Icon(icon, contentDescription = null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(32.dp))
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // 1. Contador Gigante
                 Text(
                     text = if (count > 0) "$count Nuevos" else "Todo limpio",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
-                    lineHeight = 38.sp
+                    color = Color.White
                 )
 
-                // 2. Título Principal
                 Text(
                     text = label,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White.copy(alpha = 0.95f)
+                    color = Color.White
                 )
 
-                // 3. Subtítulo (El que faltaba)
                 Text(
                     text = subLabel,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.75f) // Un poco más transparente
+                    color = Color.White.copy(alpha = 0.75f)
                 )
             }
 
-            // Flechita
             Icon(
                 Icons.Default.ArrowForward,
                 contentDescription = null,
@@ -328,68 +325,119 @@ fun StatusCard(
 
 @Composable
 fun FavoriteCategoryCard(name: String, color: Color, onClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.size(width = 110.dp, height = 100.dp).clickable { onClick() }
+        modifier = Modifier
+            .size(width = 110.dp, height = 100.dp)
+            .clickable { onClick() }
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(color.copy(alpha = 0.2f)),
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(name.take(1).uppercase(), fontWeight = FontWeight.Bold, color = color, fontSize = 18.sp)
+                Text(
+                    name.take(1).uppercase(),
+                    fontWeight = FontWeight.Bold,
+                    color = color,
+                    fontSize = 18.sp
+                )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(name, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                name,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
 
 @Composable
 fun UsageCard(used: Int, limit: Int, primaryColor: Color, onClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
     val percentage = (used.toFloat() / limit.toFloat()).coerceIn(0f, 1f)
+
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             CircularProgressIndicator(
                 progress = { percentage },
                 modifier = Modifier.size(50.dp),
                 color = if (percentage > 0.9f) Color.Red else primaryColor,
-                trackColor = Color(0xFFE0E0E0),
+                trackColor = colorScheme.surfaceVariant,
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text("Uso diario de IA", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                Text("$used de $limit clasificaciones usadas", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(
+                    "Uso diario de IA",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.onSurface
+                )
+                Text(
+                    "$used de $limit clasificaciones usadas",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colorScheme.onSurfaceVariant
+                )
             }
         }
     }
 }
+
 
 @Composable
 fun PromoBanner(title: String, description: String, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF263238)),
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFFFFC107))
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFC107)
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(description, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
             }
-            Icon(Icons.Default.WorkspacePremium, null, tint = Color(0xFFFFC107), modifier = Modifier.size(32.dp))
+            Icon(
+                Icons.Default.WorkspacePremium,
+                null,
+                tint = Color(0xFFFFC107),
+                modifier = Modifier.size(32.dp)
+            )
         }
     }
 }
@@ -403,45 +451,45 @@ fun RecentEmailItem(
     fecha: String,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 12.dp), // Un poco más de aire para el dedo
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 1. Avatar con inicial
         Box(
             modifier = Modifier
                 .size(42.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF0F0F0)),
+                .background(colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = remitente.take(1).uppercase(),
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF757575),
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 18.sp
             )
         }
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // 2. Textos Centrales
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = remitente,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF202124),
+                color = colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = asunto,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -449,10 +497,9 @@ fun RecentEmailItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // 3. Badge de Categoría y Hora
         Column(horizontalAlignment = Alignment.End) {
             Surface(
-                color = colorCategoria.copy(alpha = 0.1f),
+                color = colorCategoria.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(6.dp)
             ) {
                 Text(
@@ -468,7 +515,7 @@ fun RecentEmailItem(
             Text(
                 text = formatTime(fecha),
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.LightGray,
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 11.sp
             )
         }
@@ -477,14 +524,10 @@ fun RecentEmailItem(
 
 fun formatTime(dateString: String): String {
     return try {
-        if (dateString.contains(" ")) {
+        if (dateString.contains(" "))
             dateString.split(" ")[1].substring(0, 5)
-        } else {
-            "Reciente"
-        }
+        else "Reciente"
     } catch (e: Exception) {
         "Hoy"
     }
 }
-
-//push inofencivo
