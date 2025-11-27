@@ -1,6 +1,9 @@
 package com.example.magfind1.views
 
 import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -32,10 +35,6 @@ import com.example.magfind1.ui.theme.ThemeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.URLEncoder
-import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 
 @Composable
 fun fSuscripcionView(navController: NavController, themeViewModel: ThemeViewModel) {
@@ -43,22 +42,37 @@ fun fSuscripcionView(navController: NavController, themeViewModel: ThemeViewMode
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var selectedPlan by remember { mutableStateOf("Essential") }
+    val session = remember { SessionManager(context) }
+    val planActual = session.getPlan()?.trim()?.lowercase() ?: "essential"
 
-    // 🔥 Nuevo launcher para StripeSetupActivity
+
     val stripeLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
 
         if (result.resultCode == Activity.RESULT_OK) {
-            println("DEBUG: StripeSetupActivity regresó OK")
-
-            // Aquí activamos plan en backend si quieres
             navController.navigate("Home") {
                 popUpTo("Suscripcion") { inclusive = true }
             }
-        } else {
-            println("DEBUG: StripeSetupActivity cancelado o fallido")
+        }
+    }
+
+    fun iniciarStripe(plan: String) {
+        scope.launch(Dispatchers.IO) {
+            val api = RetrofitClient.retrofit.create(ApiService::class.java)
+            val email = SessionManager.email.orEmpty()
+
+            val res = api.createSetupIntent(mapOf("email" to email))
+
+            val secret = res.client_secret
+            val cust = res.customer_id
+
+            val intent = Intent(context, StripeSetupActivity::class.java)
+            intent.putExtra("clientSecret", secret)
+            intent.putExtra("customerId", cust)
+            intent.putExtra("plan", plan)
+
+            stripeLauncher.launch(intent)
         }
     }
 
@@ -73,6 +87,7 @@ fun fSuscripcionView(navController: NavController, themeViewModel: ThemeViewMode
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
             "Suscripción" to { navController.navigate("Suscripcion") },
             "Ajustes" to { navController.navigate("Ajustes") },
+            "Ayuda" to { navController.navigate("Ayuda") }
         )
     ) { padding ->
 
@@ -93,63 +108,51 @@ fun fSuscripcionView(navController: NavController, themeViewModel: ThemeViewMode
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // ---- PLANES ----
-            PlanCard("Essential", "Gratis",
-                "• 1 cuenta • AI básica • Hasta 5 categorías • Soporte básico",
-                selectedPlan == "Essential", Color(0xFFD6E6F7)
-            ) { selectedPlan = "Essential" }
-
-            PlanCard("Plus", "$50 / mes",
-                "• 3 cuentas • Hasta 50 categorías • Reglas avanzadas • Sin anuncios",
-                selectedPlan == "Plus", Color(0xFFDDD3E0)
-            ) { selectedPlan = "Plus" }
-
-            PlanCard("Platinum", "$150 / mes",
-                "• 10 cuentas • Notificaciones avanzadas • IA diaria • Soporte Premium",
-                selectedPlan == "Platinum", Color(0xFFF7F7F7)
-            ) { selectedPlan = "Platinum" }
-
-            PlanCard("Business", "$199 / mes",
-                "• Ilimitado • Panel admin • Categorías compartidas • Integraciones",
-                selectedPlan == "Business", Color(0xFFF9F9F0)
-            ) { selectedPlan = "Business" }
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Button(
-                modifier = Modifier.fillMaxWidth(0.8f),
-                colors = ButtonDefaults.buttonColors(Color(0xFF1976D2)),
-                onClick = {
-                    println("DEBUG: Inicio click en plan = $selectedPlan")
-
-                    if (selectedPlan == "Essential") {
+             // PLANES CON CONFIRMAR ADENTRO
+            PlanCard(
+                title = "Essential",
+                price = "Gratis",
+                description = "• 1 cuenta • AI básica • Hasta 5 categorías • Soporte básico",
+                isCurrent = planActual == "essential",
+                onConfirm = {
+                    // Si NO es essential → activamos plan y navegamos
+                    if (planActual != "essential") {
+                        session.savePlan("essential")
                         navController.navigate("Home")
-                        return@Button
-                    }
-
-                    scope.launch(Dispatchers.IO) {
-                        val api = RetrofitClient.retrofit.create(ApiService::class.java)
-                        val email = SessionManager.email.orEmpty()
-
-                        val res = api.createSetupIntent(mapOf("email" to email))
-
-                        val secret = res.client_secret   // NO ENCODE
-                        val cust = res.customer_id       // NO ENCODE
-
-                        val intent = Intent(context, StripeSetupActivity::class.java)
-                        intent.putExtra("clientSecret", secret)
-                        intent.putExtra("customerId", cust)
-                        intent.putExtra("plan", selectedPlan)
-
-                        stripeLauncher.launch(intent)
                     }
                 }
-            ) {
-                Text("Confirmar plan", color = Color.White, fontSize = 18.sp)
-            }
+            )
+
+
+            PlanCard(
+                title = "Plus",
+                price = "$50 / mes",
+                description = "• 3 cuentas • Hasta 50 categorías • Reglas avanzadas • Sin anuncios",
+                isCurrent = planActual == "plus",
+                onConfirm = { iniciarStripe("Plus") }
+            )
+
+
+            PlanCard(
+                title = "Platinum",
+                price = "$150 / mes",
+                description = "• 10 cuentas • Notificaciones avanzadas • IA diaria • Soporte Premium",
+                isCurrent = planActual == "platinum",
+                onConfirm = { iniciarStripe("Platinum") }
+            )
+
+
+            PlanCard(
+                title = "Business",
+                price = "$199 / mes",
+                description = "• Ilimitado • Panel admin • Categorías compartidas • Integraciones",
+                isCurrent = planActual == "business",
+                onConfirm = { iniciarStripe("Business") }
+            )
         }
     }
 }
+
 
 // --------------------------------------------------------
 // ---------------------- PLAN CARD ------------------------
@@ -159,10 +162,10 @@ fun PlanCard(
     title: String,
     price: String,
     description: String,
-    isSelected: Boolean,
-    selectedColor: Color,
-    onSelect: () -> Unit
+    isCurrent: Boolean,
+    onConfirm: () -> Unit
 ) {
+
     val colorPlan = when (title) {
         "Essential" -> Color(0xFF3084D7)
         "Plus" -> Color(0xFF572364)
@@ -171,54 +174,45 @@ fun PlanCard(
         else -> Color(0xFFD1E9FF)
     }
 
-    val animatedBorderColor by animateColorAsState(
-        targetValue = if (isSelected) colorPlan else Color.Transparent,
-        animationSpec = tween(800, easing = LinearEasing)
-    )
-
-    val animatedBorderWidth by animateDpAsState(
-        targetValue = if (isSelected) 3.dp else 2.dp,
-        animationSpec = tween(500, easing = LinearOutSlowInEasing)
-    )
-
     Card(
         modifier = Modifier
-            .fillMaxWidth(0.85f)
-            .padding(vertical = 10.dp)
-            .clickable { onSelect() },
+            .fillMaxWidth(0.9f)
+            .padding(vertical = 12.dp),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(animatedBorderWidth, animatedBorderColor),
-        elevation = CardDefaults.cardElevation(0.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) selectedColor else Color(0xFFF7FBFF)
-        )
+        elevation = CardDefaults.cardElevation(3.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FAFE))
     ) {
+
         Column(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = colorPlan)
             Text(price, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+
             Spacer(Modifier.height(10.dp))
-            Text(description, fontSize = 16.sp, color = Color.Black)
-            Spacer(Modifier.height(10.dp))
+
+            Text(description, fontSize = 16.sp, color = Color.Black, textAlign = TextAlign.Center)
+
+            Spacer(Modifier.height(20.dp))
+
             Button(
-                onClick = onSelect,
+                onClick = { if (!isCurrent) onConfirm() },
+                enabled = !isCurrent,
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) Color(0xFF1976D2) else Color.White
-                ),
-                border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder
+                    containerColor = if (isCurrent) Color.Gray else colorPlan,
+                    disabledContainerColor = Color.Gray
+                )
             ) {
                 Text(
-                    if (isSelected) "Seleccionado" else "Seleccionar",
-                    color = if (isSelected) Color.White else Color(0xFF1976D2)
+                    text = if (isCurrent) "Actual" else "Confirmar plan",
+                    color = Color.White,
+                    fontSize = 16.sp
                 )
             }
         }
     }
 }
 
-suspend fun activarSuscripcionBackend(customerId: String, plan: String) {
-    val api = RetrofitClient.retrofit.create(ApiService::class.java)
-    api.createSubscription(mapOf("customerId" to customerId, "plan" to plan))
-}

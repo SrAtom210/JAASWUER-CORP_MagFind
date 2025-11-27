@@ -51,6 +51,7 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
     var loadingGmail by remember { mutableStateOf(true) }
 
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     val token = session.getToken() ?: ""
     val uriHandler = LocalUriHandler.current
@@ -60,9 +61,52 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
     var forgotLoading by remember { mutableStateOf(false) }
     val repo = remember { AuthRepository() }
 
-    // ------------------------------
+    // ======================================================
+    // FUNCIÓN DE ELIMINAR CUENTA — ¡AHORA ARRIBA!
+    // ======================================================
+    fun onConfirmDelete() {
+        scope.launch {
+            try {
+                val token = session.getToken() ?: return@launch
+
+                val api = RetrofitClient.instance
+                val response = api.eliminarCuentaTotal(token) // ← SIN "Bearer"
+
+                if (response.isSuccessful) {
+
+                    session.clearSession()
+
+                    Toast.makeText(
+                        context,
+                        "Cuenta eliminada con éxito",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    navController.navigate("Login") {
+                        popUpTo(0)
+                    }
+
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Error: ${response.message()}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    context,
+                    "No se pudo conectar al servidor",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    // ======================================================
     // CARGAR ESTADO DE GMAIL
-    // ------------------------------
+    // ======================================================
     LaunchedEffect(Unit) {
         try {
             if (token.isNotEmpty()) {
@@ -95,6 +139,7 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
                 "Mi Cuenta" to { navController.navigate("MiCuenta") },
                 "Suscripción" to { navController.navigate("Suscripcion") },
                 "Ajustes" to { navController.navigate("Ajustes") },
+                "Ayuda" to { navController.navigate("Ayuda") }
             )
         ) { innerPadding ->
 
@@ -107,9 +152,9 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
 
-                //----------------------
+                // ----------------------
                 // PREFERENCIAS
-                //----------------------
+                // ----------------------
                 Text(
                     "Preferencias",
                     fontSize = 22.sp,
@@ -127,9 +172,9 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                 Divider(color = accentColor.copy(alpha = 0.6f))
 
-                //----------------------
+                // ----------------------
                 // PRIVACIDAD
-                //----------------------
+                // ----------------------
                 Text(
                     "Privacidad",
                     fontSize = 22.sp,
@@ -149,11 +194,13 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
                     uriHandler.openUri("https://magfind.xyz/terminos")
                 }
 
-                fSettingAction("Eliminar cuenta", accentColor) {}
+                fSettingAction("Eliminar cuenta", Color.Red) {
+                    showDeleteDialog = true
+                }
 
-                //----------------------
+                // ----------------------
                 // CUENTA GMAIL
-                //----------------------
+                // ----------------------
                 Text(
                     "Cuenta de Gmail",
                     fontSize = 22.sp,
@@ -162,9 +209,7 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
 
                 if (loadingGmail) {
                     CircularProgressIndicator(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .size(28.dp),
+                        modifier = Modifier.padding(16.dp).size(28.dp),
                         color = accentColor
                     )
                 } else if (gmailEmail == null) {
@@ -204,7 +249,7 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
     }
 
     // ======================================================
-    // POPUP CONFIRMACIÓN DESVINCULAR GMAIL
+    // POPUP CONFIRMAR DESVINCULAR GMAIL
     // ======================================================
     if (showConfirmDialog) {
         AlertDialog(
@@ -264,6 +309,43 @@ fun fAjustesView(navController: NavController, themeViewModel: ThemeViewModel) {
             }
         )
     }
+
+    // ======================================================
+    // POPUP ELIMINAR CUENTA
+    // ======================================================
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text(
+                    "Eliminar cuenta",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+            },
+            text = {
+                Text(
+                    "Esta acción eliminará permanentemente tu cuenta, correos, categorías y configuraciones. No se puede deshacer.\n\n¿Deseas continuar?",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onConfirmDelete()
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }
 
 // ======================================================
@@ -313,16 +395,18 @@ fun fSettingAction(title: String, accentColor: Color, onClick: () -> Unit) {
 // ======================================================
 fun openGoogleOAuth(context: Context, token: String) {
     val encodedState = URLEncoder.encode(token, "UTF-8")
-    val clientId = "76794028126-h85vt3eva11286jjob5leq038mr61q6c.apps.googleusercontent.com"
+    val clientId =
+        "76794028126-h85vt3eva11286jjob5leq038mr61q6c.apps.googleusercontent.com"
 
-    val url = "https://accounts.google.com/o/oauth2/v2/auth" +
-            "?client_id=$clientId" +
-            "&redirect_uri=https://api.magfind.xyz/gmail/callback" +
-            "&response_type=code" +
-            "&scope=email%20profile%20https://www.googleapis.com/auth/gmail.readonly" +
-            "&access_type=offline" +
-            "&prompt=consent" +
-            "&state=$encodedState"
+    val url =
+        "https://accounts.google.com/o/oauth2/v2/auth" +
+                "?client_id=$clientId" +
+                "&redirect_uri=https://api.magfind.xyz/gmail/callback" +
+                "&response_type=code" +
+                "&scope=email%20profile%20https://www.googleapis.com/auth/gmail.readonly" +
+                "&access_type=offline" +
+                "&prompt=consent" +
+                "&state=$encodedState"
 
     val intent = CustomTabsIntent.Builder().build()
     intent.launchUrl(context, Uri.parse(url))

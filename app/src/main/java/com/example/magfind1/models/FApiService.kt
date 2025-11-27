@@ -127,4 +127,10 @@ interface ApiService {
         @Path("id_cat") idCategoria: Int,
         @Path("token") token: String
     ): CorreosListResponse
+
+    @DELETE("usuario/eliminar_cuenta_total/{token}")
+    suspend fun eliminarCuentaTotal(
+        @Path("token") token: String
+    ): Response<Void>
+
 }

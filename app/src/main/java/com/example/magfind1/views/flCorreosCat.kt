@@ -313,11 +313,17 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
             } else {
                 errorMsg = "Token inválido. Inicia sesión nuevamente."
             }
-        } catch (e: Exception) {
-            errorMsg = "Error al cargar correos: ${e.message}"
-            e.printStackTrace()
+        }catch (e: Exception) {
+                errorMsg = when {
+                    e.message?.contains("Failed to connect") == true ||
+                            e.message?.contains("ECONNREFUSED") == true ->
+                        "No se pudo conectar al servidor. Intenta más tarde."
+
+                    else -> "Ocurrió un error inesperado: ${e.message}"
+                }
+            }
+
         }
-    }
 
     // Usamos la plantilla y habilitamos el buscador
     fPlantilla(
@@ -333,6 +339,7 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
             "Suscripción" to { navController.navigate("Suscripcion") },
             "Ajustes" to { navController.navigate("Ajustes") },
+            "Ayuda" to { navController.navigate("Ayuda") }
         )
     ) { innerPadding -> // Recibimos el padding de la Plantilla
 

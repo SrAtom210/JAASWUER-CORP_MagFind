@@ -53,5 +53,6 @@ fun NavManager(themeViewModel: ThemeViewModel) {
             val name = it.arguments?.getString("nombre") ?: "Categoría"
             fCorreosPorCategoriaView(navController, themeViewModel, id, name)
         }
+        composable("Ayuda") { fAyudaView(navController, themeViewModel) }
     }
 }

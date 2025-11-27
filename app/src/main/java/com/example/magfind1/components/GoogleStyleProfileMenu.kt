@@ -31,8 +31,9 @@ fun GoogleStyleProfileMenu(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val session = SessionManager(navController.context)
+    val session = remember { SessionManager(navController.context) }
     val photo = session.getProfilePhoto()
+    val displayName = session.getDisplayName()
 
     val colors = MaterialTheme.colorScheme
 

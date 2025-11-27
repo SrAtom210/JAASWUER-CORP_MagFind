@@ -53,13 +53,20 @@ fun fPlantilla(
     val textColor = if (isDark) Color.White else Color.Black
     val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
 
-    val currentUsername = session.getDisplayName()
-    val currentEmail = session.getEmail()
-    val currentPlan = session.getPlan()?.replaceFirstChar { it.uppercase() }
+    var currentUsername by remember { mutableStateOf("") }
+    var currentEmail by remember { mutableStateOf("") }
+    var currentPlan by remember { mutableStateOf("") }
+    var currentPhoto by remember { mutableStateOf<String?>(null) }
 
     // --- ESTADO DEL BUSCADOR ---
     var isSearching by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+
+    // 🔥 Recarga AUTOMÁTICA al abrir cualquier pantalla con fPlantilla
+    currentUsername = session.getDisplayName().orEmpty()
+    currentEmail = session.getEmail().orEmpty()
+    currentPlan = session.getPlan().orEmpty()
+    currentPhoto = session.getProfilePhoto()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -80,16 +87,13 @@ fun fPlantilla(
                             .background(accentColor)
                             .padding(horizontal = 20.dp, vertical = 35.dp)
                     ) {
-                        val photo = session.getProfilePhoto()
-
-                        if (!photo.isNullOrEmpty()) {
+                        if (!currentPhoto.isNullOrEmpty()) {
                             AsyncImage(
-                                model = photo,
+                                model = currentPhoto,
                                 contentDescription = "Foto de perfil",
                                 modifier = Modifier
                                     .size(60.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.1f))
                             )
                         } else {
                             Icon(
@@ -252,7 +256,11 @@ fun fPlantilla(
                                         isSearching = false
                                         onSearchQueryChange("")
                                     }) {
-                                        Icon(Icons.Default.Close, tint = Color.White, contentDescription = "Cerrar")
+                                        Icon(
+                                            Icons.Default.Close,
+                                            tint = Color.White,
+                                            contentDescription = "Cerrar"
+                                        )
                                     }
                                 }
                             )
@@ -264,7 +272,11 @@ fun fPlantilla(
                         // Ocultar menú hamburguesa si se está buscando
                         if (!isSearching) {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                                Icon(
+                                    Icons.Default.Menu,
+                                    contentDescription = "Menu",
+                                    tint = Color.White
+                                )
                             }
                         }
                     },
@@ -273,7 +285,11 @@ fun fPlantilla(
                         if (searchEnabled) {
                             if (!isSearching) {
                                 IconButton(onClick = { isSearching = true }) {
-                                    Icon(Icons.Default.Search, tint = Color.White, contentDescription = "Buscar")
+                                    Icon(
+                                        Icons.Default.Search,
+                                        tint = Color.White,
+                                        contentDescription = "Buscar"
+                                    )
                                 }
                             }
                         }
