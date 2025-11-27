@@ -1,150 +1,124 @@
-package com.example.magfind1.views
+package com.example.magfind1
 
-import androidx.activity.compose.rememberLauncherForActivityResult
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.example.magfind1.RetrofitClient
+import com.example.magfind1.models.SubscriptionResponse
 import com.example.magfind1.models.ApiService
+import com.example.magfind1.RetrofitClient
+import com.example.magfind1.SessionManager
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.PaymentSheetResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// --- IMPORTS CLAVE PARA STRIPE 20.48.0 ---
-import com.stripe.android.paymentsheet.PaymentSheet
-import com.stripe.android.paymentsheet.PaymentSheetContract
-import com.stripe.android.paymentsheet.PaymentSheetResult
-
 @Composable
-fun StripeSetupView(
-    navController: NavController,
+fun StripePremiumSetupView(
+    activity: ComponentActivity,
     clientSecret: String,
     customerId: String,
     plan: String
 ) {
     val scope = rememberCoroutineScope()
 
-    var isLoading by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf("Confirma tu método de pago") }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // 1. Configuración del Launcher
-    val stripeLauncher = rememberLauncherForActivityResult(
-        contract = PaymentSheetContract()
-    ) { result ->
-        when (result) {
-            is PaymentSheetResult.Canceled -> {
-                isLoading = false
-                statusMessage = "Operación cancelada"
-            }
-            is PaymentSheetResult.Failed -> {
-                isLoading = false
-                statusMessage = "Error en Stripe: ${result.error.localizedMessage}"
-                println("DEBUG STRIPE ERROR: ${result.error}")
-            }
-            is PaymentSheetResult.Completed -> {
-                statusMessage = "Tarjeta guardada. Creando suscripción..."
-
-                // 2. Notificar al Backend
-                scope.launch(Dispatchers.IO) {
-                    activarSuscripcionEnBackend(customerId, plan, navController) { errorMsg ->
-                        statusMessage = errorMsg
-                        isLoading = false
-                    }
-                }
+    val paymentSheet = remember {
+        PaymentSheet(activity) { result ->
+            scope.launch {
+                handlePaymentResult(result, activity, plan, customerId)
             }
         }
     }
 
-    fun openStripeSheet() {
-        isLoading = true
-
-        // Configuración visual básica de Stripe
-        val configuration = PaymentSheet.Configuration(
-            merchantDisplayName = "MagFind",
-            allowsDelayedPaymentMethods = true
-        )
-
-        /*try {
-            // CON STRIPE 20.48.0 ESTA LÍNEA DEBE FUNCIONAR:
-            // Se usa el método estático createSetupIntent
-            val args = PaymentSheetContract.Args.createSetupIntent(
-                clientSecret = clientSecret,
-                config = configuration
+    LaunchedEffect(Unit) {
+        try {
+            paymentSheet.presentWithSetupIntent(
+                clientSecret,
+                PaymentSheet.Configuration(
+                    merchantDisplayName = "MagFind",
+                    customer = PaymentSheet.CustomerConfiguration(
+                        id = customerId,
+                        ephemeralKeySecret = "" // No requerido para SetupIntent
+                    )
+                )
             )
-            stripeLauncher.launch(args)
-
         } catch (e: Exception) {
+            errorMessage = e.localizedMessage ?: "Error desconocido"
             isLoading = false
-            statusMessage = "Error al iniciar Stripe: ${e.message}"
             e.printStackTrace()
         }*/
     }
 
-    // --- UI ---
-    Column(
+    // UI PREMIUM
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(30.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "Suscripción: $plan",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1976D2)
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
 
         if (isLoading) {
             CircularProgressIndicator()
-        } else {
-            Text(
-                text = statusMessage,
-                color = if (statusMessage.contains("Error")) Color.Red else Color.Gray,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
+        }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(
-                onClick = { openStripeSheet() },
-                colors = ButtonDefaults.buttonColors(Color(0xFF1976D2)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Ingresar Tarjeta")
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            TextButton(onClick = { navController.popBackStack() }) {
-                Text("Cancelar")
+        errorMessage?.let { msg ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(msg, color = MaterialTheme.colorScheme.error)
+                Spacer(Modifier.height(20.dp))
+                Button(onClick = { activity.finish() }) {
+                    Text("Cerrar")
+                }
             }
         }
     }
 }
 
-// --- LÓGICA BACKEND ---
-suspend fun activarSuscripcionEnBackend(
-    customerId: String,
+suspend fun handlePaymentResult(
+    result: PaymentSheetResult,
+    activity: Activity,
     plan: String,
-    navController: NavController,
-    onError: suspend (String) -> Unit
+    customerId: String
+) {
+    when (result) {
+
+        is PaymentSheetResult.Canceled -> {
+            Toast.makeText(activity, "Pago cancelado", Toast.LENGTH_LONG).show()
+            activity.finish()
+        }
+
+        is PaymentSheetResult.Failed -> {
+            Toast.makeText(activity, "Error: ${result.error.localizedMessage}", Toast.LENGTH_LONG).show()
+            activity.finish()
+        }
+
+        is PaymentSheetResult.Completed -> {
+            Toast.makeText(activity, "Método de pago guardado, activando plan...", Toast.LENGTH_LONG).show()
+
+            activarPlanEnBackend(activity, plan, customerId)
+
+            activity.finish()
+        }
+    }
+}
+
+suspend fun activarPlanEnBackend(
+    activity: Activity,
+    plan: String,
+    customerId: String
 ) {
     try {
         val api = RetrofitClient.retrofit.create(ApiService::class.java)
 
-        println("DEBUG: Enviando a backend -> Customer: $customerId, Plan: $plan")
-
-        val response = api.createSubscription(
+        val response: SubscriptionResponse = api.createSubscription(
             mapOf(
                 "customerId" to customerId,
                 "plan" to plan
@@ -152,20 +126,21 @@ suspend fun activarSuscripcionEnBackend(
         )
 
         withContext(Dispatchers.Main) {
-            // Verificamos el status según tu modelo
-            if (response.status == "active" || response.status == "succeeded" || response.status == "trialing") {
-                println("DEBUG: Suscripción ACTIVADA correctamente")
-                navController.navigate("Home") {
-                    popUpTo("Suscripcion") { inclusive = true }
-                }
+            if (response.status == "active" || response.status == "trialing") {
+                Toast.makeText(activity, "Suscripción activada", Toast.LENGTH_LONG).show()
+
+                // Guardamos plan en SessionManager
+                SessionManager.username = plan
+
             } else {
-                onError("Pago procesado pero suscripción no activa. Estado: ${response.status}")
+                Toast.makeText(activity, "Pago hecho pero plan no activado", Toast.LENGTH_LONG).show()
             }
         }
+
     } catch (e: Exception) {
-        e.printStackTrace()
         withContext(Dispatchers.Main) {
-            onError("Error de conexión: ${e.localizedMessage}")
+            Toast.makeText(activity, "Error backend: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
         }
+        e.printStackTrace()
     }
 }

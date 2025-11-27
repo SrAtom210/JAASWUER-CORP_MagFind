@@ -66,6 +66,7 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
     val token = sessionManager.getToken() ?: ""
     val session = remember { SessionManager(context) }
 
+
     LaunchedEffect(token) {
         if (token.isNotBlank()) {
             isLoading = true
@@ -89,11 +90,11 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
         themeViewModel = themeViewModel,
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
-            "Ajustes" to { navController.navigate("Ajustes") },
-            "Categorías" to { navController.navigate("Categorias") },
             "Correos" to { navController.navigate("CorreosCat") },
+            "Categorías" to { navController.navigate("Categorias") },
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
-            "Suscripción" to { navController.navigate("Suscripcion") }
+            "Suscripción" to { navController.navigate("Suscripcion") },
+            "Ajustes" to { navController.navigate("Ajustes") },
         )
     ) { padding ->
 

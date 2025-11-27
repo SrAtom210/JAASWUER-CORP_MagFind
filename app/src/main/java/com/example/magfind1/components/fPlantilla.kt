@@ -26,7 +26,7 @@ import com.example.magfind1.SessionManager
 import com.example.magfind1.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 
-// Componentes adicionales
+// Asegúrate de que estos componentes existan en tu proyecto
 import com.example.magfind1.components.AdMobBanner
 import com.example.magfind1.components.GoogleStyleProfileMenu
 
@@ -37,8 +37,8 @@ fun fPlantilla(
     navController: NavController,
     themeViewModel: ThemeViewModel,
     showProfileMenu: Boolean = true,
-    searchEnabled: Boolean = false,
-    onSearchQueryChange: (String) -> Unit = {},
+    searchEnabled: Boolean = false,               // 🆕 Habilita el buscador
+    onSearchQueryChange: (String) -> Unit = {},   // 🆕 Callback para capturar texto
     drawerItems: List<Pair<String, () -> Unit>> = emptyList(),
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -57,7 +57,7 @@ fun fPlantilla(
     val currentEmail = session.getEmail()
     val currentPlan = session.getPlan()?.replaceFirstChar { it.uppercase() }
 
-    // Estado del buscador
+    // --- ESTADO DEL BUSCADOR ---
     var isSearching by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -73,8 +73,7 @@ fun fPlantilla(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-
-                    // Drawer header...
+                    // --- HEADER DEL DRAWER ---
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -118,7 +117,7 @@ fun fPlantilla(
 
                         if (!currentPlan.isNullOrEmpty()) {
                             Text(
-                                text = "Plan: $currentPlan",
+                                text = "$currentPlan",
                                 color = Color.White.copy(alpha = 0.9f),
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp,
@@ -140,6 +139,7 @@ fun fPlantilla(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // --- ITEMS DEL MENU ---
                     drawerItems.forEach { (itemTitle, onClick) ->
                         val icon = when (itemTitle.lowercase()) {
                             "home" -> Icons.Default.Home
@@ -183,6 +183,20 @@ fun fPlantilla(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
+                        // --- ANUNCIO REAL ---
+                        AdMobBanner(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    } else {
+                        // Si paga (Plus/Business), solo dejamos un espacio pequeño estético
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    // --- BOTÓN CERRAR SESIÓN ---
                     TextButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -209,12 +223,12 @@ fun fPlantilla(
             }
         }
     ) {
-
-        // 🆕 TOPBAR CON BUSCADOR INTEGRADO
+        // --- SCAFFOLD PRINCIPAL CON TOPBAR ---
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
+                        // 🔍 LÓGICA DE BÚSQUEDA INTEGRADA EN EL TÍTULO
                         if (isSearching && searchEnabled) {
                             OutlinedTextField(
                                 value = searchQuery,
@@ -247,6 +261,7 @@ fun fPlantilla(
                         }
                     },
                     navigationIcon = {
+                        // Ocultar menú hamburguesa si se está buscando
                         if (!isSearching) {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
@@ -254,6 +269,7 @@ fun fPlantilla(
                         }
                     },
                     actions = {
+                        // Botón de lupa (solo si searchEnabled es true y no se está buscando ya)
                         if (searchEnabled) {
                             if (!isSearching) {
                                 IconButton(onClick = { isSearching = true }) {
@@ -262,6 +278,7 @@ fun fPlantilla(
                             }
                         }
 
+                        // Menú de perfil estilo Google
                         if (showProfileMenu) {
                             GoogleStyleProfileMenu(
                                 navController = navController,
@@ -283,7 +300,7 @@ fun fPlantilla(
     }
 }
 
-
+// Helper para los items del drawer
 @Composable
 fun fDrawerItem(
     title: String,
