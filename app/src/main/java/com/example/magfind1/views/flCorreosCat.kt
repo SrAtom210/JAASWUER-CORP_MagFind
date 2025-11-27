@@ -270,24 +270,38 @@ fun fCorreoCard(correo: cCorreo) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun fCorreosCategorizadosView(navController: NavController, themeViewModel: ThemeViewModel) {
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope() // Si lo necesitas para otras cosas, si no, fPlantilla maneja el drawer
+    // fPlantilla ya maneja el drawerState internamente para el menú hamburguesa,
+    // pero si necesitas abrirlo manualmente desde otro lado, fPlantilla debería exponerlo o manejarlo internamente.
+    // Asumiremos que fPlantilla maneja la apertura del drawer con el botón de hamburguesa estándar.
 
     // Cliente API
     val correosApi = RetrofitClient.instance
 
-    // Estado de la respuesta cruda (El mapa)
+    // Estado de la respuesta cruda
     var categoriasMap by remember { mutableStateOf<CategoriasResponse?>(null) }
 
-    // NUEVO: Estado derivado que contiene la LISTA PLANA de todos los correos
-    val todosLosCorreos = remember(categoriasMap) {
-        // Toma los valores del mapa (las listas) y las aplana en una sola lista
-        // Opcional: .sortedByDescending { it.fecha } si quisieras reordenar por fecha
-        categoriasMap?.values?.flatten() ?: emptyList()
+    // Estado para el buscador
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Estado derivado: Lista plana filtrada por búsqueda
+    val correosFiltrados = remember(categoriasMap, searchQuery) {
+        // 1. Aplanar el mapa a una lista única
+        val listaPlana = categoriasMap?.values?.flatten() ?: emptyList()
+
+        // 2. Filtrar si hay texto en el buscador
+        if (searchQuery.isBlank()) {
+            listaPlana
+        } else {
+            listaPlana.filter { correo ->
+                correo.remitente.contains(searchQuery, ignoreCase = true) ||
+                        correo.asunto.contains(searchQuery, ignoreCase = true) ||
+                        correo.descripcion.contains(searchQuery, ignoreCase = true)
+            }
+        }
     }
 
     var errorMsg by remember { mutableStateOf<String?>(null) }
-
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val token = sessionManager.getToken() ?: ""
@@ -305,31 +319,26 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
         }
     }
 
+    // Usamos la plantilla y habilitamos el buscador
     fPlantilla(
-        title = "Todos los Correos", // Cambié el título para reflejar que es general
-        navController, themeViewModel = themeViewModel,
+        title = "Bandeja de Entrada", // El título va aquí ahora
+        navController = navController,
+        themeViewModel = themeViewModel,
+        searchEnabled = true, // 🆕 Activamos la lupa
+        onSearchQueryChange = { newQuery -> searchQuery = newQuery }, // 🆕 Actualizamos el estado
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
-            "Ajustes" to { navController.navigate("Ajustes") },
-            "Categorías" to { navController.navigate("Categorias") },
             "Correos" to { navController.navigate("CorreosCat") },
+            "Categorías" to { navController.navigate("Categorias") },
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
-            "Suscripción" to { navController.navigate("Suscripcion") }
+            "Suscripción" to { navController.navigate("Suscripcion") },
+            "Ajustes" to { navController.navigate("Ajustes") },
         )
-    ) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("Bandeja de Entrada", color = Color.White) },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Abrir menú", tint = Color.White)
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color(0xFF1976D2))
-                )
-            }
-        ) { innerPadding ->
+    ) { innerPadding -> // Recibimos el padding de la Plantilla
+
+        // YA NO USAMOS SCAFFOLD AQUÍ, usamos directamente el contenido
+
+        Box(modifier = Modifier.padding(innerPadding)) {
             when {
                 errorMsg != null -> Text(
                     text = errorMsg!!,
@@ -344,22 +353,25 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
                     CircularProgressIndicator(color = Color(0xFF1976D2))
                 }
 
-                // Si la lista está vacía (pero cargó bien)
-                todosLosCorreos.isEmpty() -> Box(
+                // Si la lista está vacía (después de cargar)
+                correosFiltrados.isEmpty() -> Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No hay correos para mostrar", color = Color.Gray)
+                    if (searchQuery.isNotEmpty()) {
+                        Text("No se encontraron resultados para \"$searchQuery\"", color = Color.Gray)
+                    } else {
+                        Text("No hay correos para mostrar", color = Color.Gray)
+                    }
                 }
 
                 else -> LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
                         .padding(horizontal = 20.dp, vertical = 10.dp)
                 ) {
-                    // Aquí iteramos directamente sobre la lista plana, sin categorías
-                    items(todosLosCorreos) { correo ->
+                    // Iteramos sobre la lista filtrada
+                    items(correosFiltrados) { correo ->
                         fCorreoCard(correo, navController)
                     }
                 }
@@ -368,8 +380,9 @@ fun fCorreosCategorizadosView(navController: NavController, themeViewModel: Them
     }
 }
 
+// fCorreoCard se mantiene igual...
 @Composable
-fun fCorreoCard(correo: cCorreo, navController: NavController) { // Asegúrate que 'cCorreo' sea el nombre correcto de tu modelo
+fun fCorreoCard(correo: cCorreo, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -390,15 +403,13 @@ fun fCorreoCard(correo: cCorreo, navController: NavController) { // Asegúrate q
                     color = Color(0xFF0D47A1),
                     modifier = Modifier.weight(1f)
                 )
-                // Si tu modelo tiene fecha, es buen lugar para ponerla
-                // Text(text = correo.fecha, fontSize = 12.sp, color = Color.Gray)
             }
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = correo.asunto,
-                fontWeight = FontWeight.SemiBold, // Un poco más de peso al asunto
+                fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp,
                 color = Color.Black,
                 maxLines = 1,

@@ -35,6 +35,12 @@ import com.example.magfind1.components.fPlantilla
 import com.example.magfind1.ui.theme.ThemeViewModel
 import com.example.magfind1.viewmodels.FHomeViewModel
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
+
+
 // Helper para convertir el Hex String (#FF0000) de la DB a Color de Compose
 fun parseHexColor(hex: String?): Color {
     return try {
@@ -74,6 +80,7 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
         }
     }
 
+
     val state by homeViewModel.uiState.collectAsState()
     val nombreUsuario = session.getDisplayName() ?: "Usuario"
 
@@ -86,11 +93,11 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
         themeViewModel = themeViewModel,
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
-            "Categorías" to { navController.navigate("Categorias") },
             "Correos" to { navController.navigate("CorreosCat") },
-            "Ajustes" to { navController.navigate("Ajustes") },
+            "Categorías" to { navController.navigate("Categorias") },
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
-            "Suscripción" to { navController.navigate("Suscripcion") }
+            "Suscripción" to { navController.navigate("Suscripcion") },
+            "Ajustes" to { navController.navigate("Ajustes") },
         )
     ) { padding ->
 
