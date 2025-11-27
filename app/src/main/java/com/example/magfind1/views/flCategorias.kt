@@ -115,10 +115,12 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                             .padding(vertical = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        val userPlan = session.getPlan()?.trim()?.lowercase() ?: "essential"
+                        val userPlan = session.getPlan()?.trim()?.lowercase() ?: ""
+
+                        val isPaidUser = userPlan == "admin" || userPlan == "business" || userPlan == "plus" || userPlan == "premium"
 
                         // 2. Condicional: Solo mostrar si es 'essential'
-                        if (userPlan == "essential") {
+                        if (!isPaidUser) {
                             Spacer(modifier = Modifier.height(30.dp))
 
                             // --- ANUNCIO REAL ---
