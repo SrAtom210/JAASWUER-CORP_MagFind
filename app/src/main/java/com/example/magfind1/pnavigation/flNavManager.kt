@@ -54,5 +54,33 @@ fun NavManager(themeViewModel: ThemeViewModel) {
             fCorreosPorCategoriaView(navController, themeViewModel, id, name)
         }
         composable("Ayuda") { fAyudaView(navController, themeViewModel) }
+
+        composable(
+            route = "VerifyCode/{email}?isReset={isReset}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("isReset") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val isReset = backStackEntry.arguments?.getBoolean("isReset") ?: false
+            VerifyCodeView(navController, themeViewModel, email, isReset)
+
+
+        }
+        composable(
+            route = "SubmitNewPassword/{email}/{code}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("code") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val code = backStackEntry.arguments?.getString("code") ?: ""
+            SubmitNewPasswordView(navController, themeViewModel, email, code)
+        }
     }
 }

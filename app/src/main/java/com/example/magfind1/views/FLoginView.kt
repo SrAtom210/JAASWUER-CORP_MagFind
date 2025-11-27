@@ -33,31 +33,37 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) {
 
-    // Campos login
+    // ------------------------- CAMPOS LOGIN -------------------------
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Forgot
+    // ------------------------- CAMPOS REGISTRO (FUERA de AnimatedContent) -------------------------
+    var regEmail by remember { mutableStateOf("") }
+    var regPass by remember { mutableStateOf("") }
+    var regLoading by remember { mutableStateOf(false) }
+
+    // ------------------------- FORGOT PASSWORD -------------------------
     var showForgotDialog by remember { mutableStateOf(false) }
     var forgotLoading by remember { mutableStateOf(false) }
 
-    // Tabs
+    // ------------------------- TABS -------------------------
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Iniciar Sesión", "Registrarse")
 
-    // Theme
+    // ------------------------- THEME -------------------------
     val isDark = themeViewModel.isDarkMode.collectAsState().value
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
     val textColor = if (isDark) Color.White else Color.DarkGray
     val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
 
-    // Context
+    // ------------------------- CONTEXT -------------------------
     val context = LocalContext.current
     val activity = context as Activity
     val repo = remember { AuthRepository() }
     val session = remember { SessionManager(context) }
     val scope = rememberCoroutineScope()
 
+    // ------------------------- UI -------------------------
     Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
         Box(modifier = Modifier.fillMaxSize()) {
 
@@ -65,7 +71,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 40.dp)
-                    .padding(top = 60.dp), // evita que se corte Google login
+                    .padding(top = 60.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
@@ -86,7 +92,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // ------------ TABS -------------
+                // ------------------------- TABS -------------------------
                 TabRow(
                     selectedTabIndex = selectedTab,
                     containerColor = Color.Transparent,
@@ -117,10 +123,12 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ----------- LOGIN / REGISTRO ------------
+                // ------------------------- CONTENIDO TABS -------------------------
                 AnimatedContent(selectedTab) { tab ->
 
-                    // ========== LOGIN ==========
+                    // ======================================================
+                    //                     LOGIN
+                    // ======================================================
                     if (tab == 0) {
 
                         Column(
@@ -147,7 +155,6 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                             )
 
-                            // --- CENTRADO ---
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.Center
@@ -157,7 +164,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                 }
                             }
 
-                            // ---- LOGIN NORMAL ----
+                            // ------------------------- LOGIN NORMAL -------------------------
                             Button(
                                 onClick = {
                                     scope.launch {
@@ -173,6 +180,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                                 username,
                                                 res.plan
                                             )
+
                                             Toast.makeText(context, "Bienvenido $derivedName", Toast.LENGTH_SHORT).show()
                                             navController.navigate("Home") { popUpTo(0) }
                                         } else {
@@ -186,7 +194,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                 Text("Iniciar sesión", color = if (isDark) Color.Black else Color.White)
                             }
 
-                            // ---- LOGIN GOOGLE ----
+                            // ------------------------- LOGIN GOOGLE -------------------------
                             Button(
                                 onClick = {
                                     scope.launch {
@@ -196,7 +204,8 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                             val googleRes = repo.loginGoogle(googleToken)
                                             if (googleRes != null) {
 
-                                                val emailGoogle = GoogleAuthManager.lastEmail ?: "google@unknown.com"
+                                                val emailGoogle =
+                                                    GoogleAuthManager.lastEmail ?: "google@unknown.com"
                                                 val nameGoogle = emailGoogle.substringBefore("@")
 
                                                 session.saveSession(
@@ -206,8 +215,6 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                                     emailGoogle,
                                                     googleRes.plan
                                                 )
-
-
 
                                                 Toast.makeText(context, "Inicio con Google exitoso", Toast.LENGTH_SHORT).show()
                                                 navController.navigate("Home") { popUpTo(0) }
@@ -231,12 +238,10 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                         }
                     }
 
-                    // ========== REGISTRO ==========
+                    // ======================================================
+                    //                     REGISTRO
+                    // ======================================================
                     else {
-
-                        var regEmail by remember { mutableStateOf("") }
-                        var regPass by remember { mutableStateOf("") }
-                        var loading by remember { mutableStateOf(false) }
 
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -268,7 +273,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                         return@Button
                                     }
 
-                                    loading = true
+                                    regLoading = true
 
                                     scope.launch {
                                         val nameDerived = regEmail.substringBefore("@")
@@ -281,13 +286,13 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                                             Toast.makeText(context, "El correo ya existe", Toast.LENGTH_LONG).show()
                                         }
 
-                                        loading = false
+                                        regLoading = false
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(accentColor)
                             ) {
-                                if (loading) {
+                                if (regLoading) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(22.dp),
                                         color = Color.White,
@@ -302,7 +307,7 @@ fun LoginView(navController: NavHostController, themeViewModel: ThemeViewModel) 
                 }
             }
 
-            // ---------- DIÁLOGO OLVIDÉ MIS CONTRASEÑA ----------
+            // ------------------------- DIALOG OLVIDÉ CONTRASEÑA -------------------------
             if (showForgotDialog) {
                 fResetPasswordDialog(
                     themeViewModel = themeViewModel,
