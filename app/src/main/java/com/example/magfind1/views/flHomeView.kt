@@ -54,6 +54,26 @@ fun flHomeView(navController: NavController, themeViewModel: ThemeViewModel) {
         FHomeViewModel(sessionManager = session)
     }
 
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        // Creamos un observador que espere al evento ON_RESUME
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                // ¡AQUÍ ES! La pantalla volvió a ser visible -> Recargamos
+                homeViewModel.refreshData()
+            }
+        }
+
+        // Conectamos el observador
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        // Limpieza cuando la vista muere
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     val state by homeViewModel.uiState.collectAsState()
     val nombreUsuario = session.getDisplayName() ?: "Usuario"
 
