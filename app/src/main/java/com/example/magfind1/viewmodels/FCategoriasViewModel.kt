@@ -8,6 +8,7 @@ import com.example.magfind1.RetrofitClient
 import com.example.magfind1.models.CategoriaDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CategoriasViewModel : ViewModel() {
@@ -15,6 +16,9 @@ class CategoriasViewModel : ViewModel() {
     val categorias: StateFlow<List<CategoriaDto>> = _categorias
 
     private val api = RetrofitClient.instance
+
+    private val _canOrganize = MutableStateFlow(false)
+    val canOrganize: StateFlow<Boolean> = _canOrganize.asStateFlow()
 
     fun cargarCategorias(token: String?) {
         if (token.isNullOrBlank()) {
@@ -40,6 +44,20 @@ class CategoriasViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("CategoriasVM", "Error al cargar categorías: ${e.message}")
                 _categorias.value = emptyList()
+            }
+        }
+    }
+
+    fun checkQuota(token: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.obtenerPlanUsuario(token)
+                // Puede organizar si tiene restantes mayor a 0
+                _canOrganize.value = response.restantes > 0
+            } catch (e: Exception) {
+                // Si falla la conexión, por seguridad deshabilitamos el botón
+                _canOrganize.value = false
+                e.printStackTrace()
             }
         }
     }
