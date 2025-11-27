@@ -26,10 +26,6 @@ import com.example.magfind1.SessionManager
 import com.example.magfind1.ui.theme.ThemeViewModel
 import kotlinx.coroutines.launch
 
-// Asegúrate de que estos componentes existan en tu proyecto
-import com.example.magfind1.components.AdMobBanner
-import com.example.magfind1.components.GoogleStyleProfileMenu
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun fPlantilla(
@@ -37,8 +33,8 @@ fun fPlantilla(
     navController: NavController,
     themeViewModel: ThemeViewModel,
     showProfileMenu: Boolean = true,
-    searchEnabled: Boolean = false,               // 🆕 Habilita el buscador
-    onSearchQueryChange: (String) -> Unit = {},   // 🆕 Callback para capturar texto
+    searchEnabled: Boolean = false,
+    onSearchQueryChange: (String) -> Unit = {},
     drawerItems: List<Pair<String, () -> Unit>> = emptyList(),
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -53,20 +49,15 @@ fun fPlantilla(
     val textColor = if (isDark) Color.White else Color.Black
     val accentColor = if (isDark) Color(0xFF90CAF9) else Color(0xFF1976D2)
 
-    var currentUsername by remember { mutableStateOf("") }
-    var currentEmail by remember { mutableStateOf("") }
-    var currentPlan by remember { mutableStateOf("") }
-    var currentPhoto by remember { mutableStateOf<String?>(null) }
+    // Estado en vivo
+    val currentUsername = session.getDisplayName().orEmpty()
+    val currentEmail = session.getEmail().orEmpty()
+    val currentPlan = session.getPlan().orEmpty()
+    val currentPhoto = session.getProfilePhoto()
 
-    // --- ESTADO DEL BUSCADOR ---
+    // Buscador
     var isSearching by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-
-    // 🔥 Recarga AUTOMÁTICA al abrir cualquier pantalla con fPlantilla
-    currentUsername = session.getDisplayName().orEmpty()
-    currentEmail = session.getEmail().orEmpty()
-    currentPlan = session.getPlan().orEmpty()
-    currentPhoto = session.getProfilePhoto()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -80,13 +71,15 @@ fun fPlantilla(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // --- HEADER DEL DRAWER ---
+
+                    // ================= HEADER DEL DRAWER =================
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(accentColor)
                             .padding(horizontal = 20.dp, vertical = 35.dp)
                     ) {
+
                         if (!currentPhoto.isNullOrEmpty()) {
                             AsyncImage(
                                 model = currentPhoto,
@@ -107,21 +100,21 @@ fun fPlantilla(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = currentUsername.toString(),
+                            text = currentUsername,
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         )
 
                         Text(
-                            text = currentEmail.toString(),
+                            text = currentEmail,
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 14.sp
                         )
 
-                        if (!currentPlan.isNullOrEmpty()) {
+                        if (currentPlan.isNotEmpty()) {
                             Text(
-                                text = "$currentPlan",
+                                text = currentPlan,
                                 color = Color.White.copy(alpha = 0.9f),
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp,
@@ -143,7 +136,7 @@ fun fPlantilla(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // --- ITEMS DEL MENU ---
+                    // ================= ITEMS DEL MENU =================
                     drawerItems.forEach { (itemTitle, onClick) ->
                         val icon = when (itemTitle.lowercase()) {
                             "home" -> Icons.Default.Home
@@ -152,6 +145,7 @@ fun fPlantilla(
                             "ajustes" -> Icons.Default.Settings
                             "mi cuenta" -> Icons.Default.Person
                             "suscripción" -> Icons.Default.Star
+                            "ayuda" -> Icons.Default.Help
                             else -> Icons.Default.ChevronRight
                         }
 
@@ -166,42 +160,22 @@ fun fPlantilla(
                     }
 
                     Spacer(modifier = Modifier.height(30.dp))
-                    // --- ANUNCIO REAL ---
-                    val userPlan = session.getPlan()?.trim()?.lowercase() ?: ""
 
-                    val isPaidUser = userPlan == "admin" || userPlan == "business" || userPlan == "plus" || userPlan == "premium"
+                    // ================= ANUNCIOS (solo Essential) =================
+                    val planLower = currentPlan.lowercase().trim()
+                    val isPaidUser =
+                        planLower == "plus" || planLower == "premium" || planLower == "business" || planLower == "admin"
 
-                    // 2. Condicional: Solo mostrar si es 'essential'
                     if (!isPaidUser) {
-                        Spacer(modifier = Modifier.height(30.dp))
-
-                        // --- ANUNCIO REAL ---
                         AdMobBanner(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                         )
-
                         Spacer(modifier = Modifier.height(20.dp))
-                    } else {
-                        // Si paga (Plus/Business), solo dejamos un espacio pequeño estético
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                        // --- ANUNCIO REAL ---
-                        AdMobBanner(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-                    } else {
-                        // Si paga (Plus/Business), solo dejamos un espacio pequeño estético
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    // --- BOTÓN CERRAR SESIÓN ---
+                    // ================= BOTÓN CERRAR SESIÓN =================
                     TextButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -228,12 +202,12 @@ fun fPlantilla(
             }
         }
     ) {
-        // --- SCAFFOLD PRINCIPAL CON TOPBAR ---
+
+        // ================= TOP BAR =================
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
-                        // 🔍 LÓGICA DE BÚSQUEDA INTEGRADA EN EL TÍTULO
                         if (isSearching && searchEnabled) {
                             OutlinedTextField(
                                 value = searchQuery,
@@ -257,11 +231,7 @@ fun fPlantilla(
                                         isSearching = false
                                         onSearchQueryChange("")
                                     }) {
-                                        Icon(
-                                            Icons.Default.Close,
-                                            tint = Color.White,
-                                            contentDescription = "Cerrar"
-                                        )
+                                        Icon(Icons.Default.Close, tint = Color.White, contentDescription = "Cerrar")
                                     }
                                 }
                             )
@@ -270,37 +240,24 @@ fun fPlantilla(
                         }
                     },
                     navigationIcon = {
-                        // Ocultar menú hamburguesa si se está buscando
                         if (!isSearching) {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(
-                                    Icons.Default.Menu,
-                                    contentDescription = "Menu",
-                                    tint = Color.White
-                                )
+                                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
                             }
                         }
                     },
                     actions = {
-                        // Botón de lupa (solo si searchEnabled es true y no se está buscando ya)
-                        if (searchEnabled) {
-                            if (!isSearching) {
-                                IconButton(onClick = { isSearching = true }) {
-                                    Icon(
-                                        Icons.Default.Search,
-                                        tint = Color.White,
-                                        contentDescription = "Buscar"
-                                    )
-                                }
+                        if (searchEnabled && !isSearching) {
+                            IconButton(onClick = { isSearching = true }) {
+                                Icon(Icons.Default.Search, tint = Color.White, contentDescription = "Buscar")
                             }
                         }
 
-                        // Menú de perfil estilo Google
                         if (showProfileMenu) {
                             GoogleStyleProfileMenu(
                                 navController = navController,
-                                userName = currentUsername.toString(),
-                                email = currentEmail.toString()
+                                userName = currentUsername,
+                                email = currentEmail
                             )
                         }
                     },
@@ -317,7 +274,9 @@ fun fPlantilla(
     }
 }
 
-// Helper para los items del drawer
+
+// ================= DRAWER ITEM =================
+
 @Composable
 fun fDrawerItem(
     title: String,

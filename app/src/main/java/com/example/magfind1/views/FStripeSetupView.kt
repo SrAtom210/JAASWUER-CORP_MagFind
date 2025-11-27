@@ -1,4 +1,4 @@
-package com.example.magfind1
+package com.example.magfind1.views
 
 import android.app.Activity
 import android.widget.Toast
@@ -55,7 +55,7 @@ fun StripePremiumSetupView(
             errorMessage = e.localizedMessage ?: "Error desconocido"
             isLoading = false
             e.printStackTrace()
-        }*/
+        }
     }
 
     // UI PREMIUM
