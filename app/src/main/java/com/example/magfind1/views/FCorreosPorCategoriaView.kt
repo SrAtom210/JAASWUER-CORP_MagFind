@@ -71,11 +71,11 @@ fun fCorreosPorCategoriaView(
         themeViewModel = themeViewModel,
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
-            "Ajustes" to { navController.navigate("Ajustes") },
-            "Categorías" to { navController.navigate("Categorias") },
             "Correos" to { navController.navigate("CorreosCat") },
+            "Categorías" to { navController.navigate("Categorias") },
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
-            "Suscripción" to { navController.navigate("Suscripcion") }
+            "Suscripción" to { navController.navigate("Suscripcion") },
+            "Ajustes" to { navController.navigate("Ajustes") },
         )
     ) { innerPadding ->
 

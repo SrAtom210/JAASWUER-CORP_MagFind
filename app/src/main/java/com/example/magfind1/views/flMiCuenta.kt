@@ -79,11 +79,11 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
         themeViewModel = themeViewModel,
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
-            "Ajustes" to { navController.navigate("Ajustes") },
-            "Categorías" to { navController.navigate("Categorias") },
             "Correos" to { navController.navigate("CorreosCat") },
+            "Categorías" to { navController.navigate("Categorias") },
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
-            "Suscripcion" to { navController.navigate("Suscripcion") }
+            "Suscripción" to { navController.navigate("Suscripcion") },
+            "Ajustes" to { navController.navigate("Ajustes") },
         )
     ) { innerPadding ->
 
@@ -224,7 +224,7 @@ fun fCuentaView(navController: NavController, themeViewModel: ThemeViewModel) {
                                         sessionManager.saveProfile(newName, newPhoto)  // ← GUARDA TODO
                                         cuentaVM.cargarCuenta(token)
                                         Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
-                                    }else {
+                                    }else if(!ok){
                                         Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
                                         showEditPopup = false
                                         cuentaVM.cargarCuenta(token!!)
@@ -411,5 +411,5 @@ fun EditProfilePopup(
         }
     }
 }
-}
+
 

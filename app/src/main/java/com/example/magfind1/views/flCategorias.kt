@@ -521,6 +521,8 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
 
     val sessionManager = SessionManager(context)
     val token = sessionManager.getToken() ?: ""
+    val session = remember { SessionManager(context) }
+
 
     LaunchedEffect(token) {
         if (token.isNotBlank()) {
@@ -545,11 +547,11 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
         themeViewModel = themeViewModel,
         drawerItems = listOf(
             "Home" to { navController.navigate("Home") },
-            "Ajustes" to { navController.navigate("Ajustes") },
-            "Categorías" to { navController.navigate("Categorias") },
             "Correos" to { navController.navigate("CorreosCat") },
+            "Categorías" to { navController.navigate("Categorias") },
             "Mi Cuenta" to { navController.navigate("MiCuenta") },
-            "Suscripción" to { navController.navigate("Suscripcion") }
+            "Suscripción" to { navController.navigate("Suscripcion") },
+            "Ajustes" to { navController.navigate("Ajustes") },
         )
     ) { padding ->
 
@@ -566,7 +568,20 @@ fun CategoriasView(navController: NavController, themeViewModel: ThemeViewModel)
                             .padding(vertical = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        AdMobBanner()
+                        val userPlan = session.getPlan()?.trim()?.lowercase() ?: "essential"
+
+                        // 2. Condicional: Solo mostrar si es 'essential'
+                        if (userPlan == "essential") {
+                            Spacer(modifier = Modifier.height(30.dp))
+
+                            // --- ANUNCIO REAL ---
+                            AdMobBanner()
+
+                            Spacer(modifier = Modifier.height(20.dp))
+                        } else {
+                            // Si paga (Plus/Business), solo dejamos un espacio pequeño estético
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
                 }
             },
